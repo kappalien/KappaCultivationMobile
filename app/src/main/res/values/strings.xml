@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Kappa Cultivation Mobile</string>
+    <string name="character_info">等級: %1$d\n血量: %2$d\n法力: %3$d\n攻擊: %4$d\n防禦: %5$d</string>
+</resources>

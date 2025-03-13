@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@color/semi_transparent">
+
+    <!-- 背景步數開關 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        android:padding="16dp">
+
+        <Switch
+            android:id="@+id/switchBackgroundSteps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="背景執行步數計算" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- GPS 定位開關 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        android:padding="16dp">
+
+        <Switch
+            android:id="@+id/switchGPS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="啟用 GPS 定位" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- 產生對話步數調整 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textViewDialogStep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="調整產生對話步伐數"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_gravity="center" />
+
+        <SeekBar
+            android:id="@+id/seekBarDialogStep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="500"
+            android:min="5"
+            android:progress="100"
+            android:layout_marginTop="8dp" />
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

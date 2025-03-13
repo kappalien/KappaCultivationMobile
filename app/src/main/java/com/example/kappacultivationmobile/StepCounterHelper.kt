@@ -1,0 +1,59 @@
+package com.example.kappacultivationmobile
+
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.content.SharedPreferences
+import android.util.Log
+
+class StepCounterHelper(
+    private var currentStepsInLevel: Int, // 當前等級內的步數
+    private var currentLevel: Int, // 當前等級
+    private val onStepCountChanged: (Int, Int, String) -> Unit, // UI 更新函數
+    private val levelInfoList: List<LevelInfo>,
+    private val sharedPreferences: SharedPreferences,
+    private val characterResponse: CharacterResponse, // 角色回應
+    private var dialogStepInterval: Int = 100 // 🔹 新增：可以設定多少步顯示一次對話（預設 10 步）
+) : SensorEventListener {
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
+            currentStepsInLevel += 1 // 增加步數
+            val nextLevelSteps = levelInfoList[currentLevel - 1].nextLevelSteps // 需要的步數
+
+            var response = "" // 🔹 預設不顯示對話
+
+            // **🔹 只有當達到對話間隔時才顯示對話**
+            if (currentStepsInLevel % dialogStepInterval == 0) {
+                response = characterResponse.getRandomResponseForSteps()
+            }
+
+            // 判斷是否升級
+            if (currentStepsInLevel >= nextLevelSteps) {
+                currentLevel += 1 // 升級
+                currentStepsInLevel = 0 // 步數歸零
+                response = characterResponse.getLevelUpResponse() // 給升級回應
+            } else if (nextLevelSteps - currentStepsInLevel in 1..10) {
+                response = characterResponse.getAlmostLevelUpResponse() // 快升級的回應
+            }
+
+            // ✅ 只有當 response 不是空的時候才更新 UI
+            if (response.isNotEmpty()) {
+                onStepCountChanged(currentStepsInLevel, currentLevel, response)
+                Log.d("CharacterResponse", "發送對話到 UI: $response")
+            }
+
+            // 存入 SharedPreferences
+            with(sharedPreferences.edit()) {
+                putInt("currentStepsInLevel", currentStepsInLevel)
+                putInt("currentLevel", currentLevel)
+                apply()
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // 忽略
+    }
+}
+
