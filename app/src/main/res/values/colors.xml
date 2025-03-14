@@ -5,5 +5,6 @@
     <color name="colorOnPrimary">#FFFFFF</color>
     <color name="colorSecondary">#03DAC5</color>
     <color name="colorOnSecondary">#000000</color>
+    <color name="button_color">#77ABB2B9</color> <!-- 橙色 -->
     <color name="semi_transparent">#80000000</color> <!-- 半透明黑色 -->
 </resources>

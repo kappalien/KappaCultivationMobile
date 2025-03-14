@@ -39,7 +39,8 @@ class MainActivity : AppCompatActivity() {
     private var stepCounterSensor: Sensor? = null
     private lateinit var stepCounterHelper: StepCounterHelper
 
-    private lateinit var tvStatus: TextView
+    private lateinit var tvStatus: TextView // 等級資訊
+    private lateinit var petStatusTextView: TextView    //狀態資訊
     private lateinit var characterImage: ImageView
     private lateinit var characterInfo: TextView
     private lateinit var characterResponseTextView: TextView
@@ -56,6 +57,11 @@ class MainActivity : AppCompatActivity() {
     private var isCharacterInfoVisible = false // 控制角色資訊的顯示狀態
     private lateinit var levelInfoList: List<LevelInfo>
     private var savedLevel = 1
+
+    // 互動功能
+    private lateinit var petStatus: PetStatus
+    private lateinit var petActions: PetActions
+    private lateinit var petUpdateManager: PetUpdateManager
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         characterImage = findViewById(R.id.character_image)
         characterInfo = findViewById(R.id.character_info)
         characterResponseTextView = findViewById(R.id.character_response)
-        characterInfoButton = findViewById(R.id.button_1) // 角色資訊按鈕
+        characterInfoButton = findViewById(R.id.button_info) // 角色資訊按鈕
 
         // 初始化 locationListener
         locationListener = object : android.location.LocationListener {
@@ -114,6 +120,8 @@ class MainActivity : AppCompatActivity() {
         savedLevel = sharedPreferences.getInt(KEY_LEVEL, 1) // 讀取等級
 
         tvStatus.text = "等級: $savedLevel  |  累積步數: $savedSteps" // 讀取最後一次的累加數值
+
+        petStatusTextView = findViewById(R.id.tv_pet_status) // 讀取狀態
 
         // 解析 level_info.json
         val jsonString = assets.open("level_info.json").bufferedReader().use { it.readText() }
@@ -188,8 +196,27 @@ class MainActivity : AppCompatActivity() {
         // 初始化 LocationManager
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+        // ✅ 電子雞系統初始化
+        petStatus = PetStatus()
+        petActions = PetActions(petStatus)
+        petUpdateManager = PetUpdateManager(petStatus) { updateUI() }
+
+        // ✅ 綁定 UI 按鈕
+        findViewById<Button>(R.id.button_feed).setOnClickListener { petActions.feed(); updateUI() }
+        findViewById<Button>(R.id.button_meditate).setOnClickListener { petActions.meditate(); updateUI() }
+        findViewById<Button>(R.id.button_play).setOnClickListener { petActions.play(); updateUI() }
+        findViewById<Button>(R.id.button_clean).setOnClickListener { petActions.clean(); updateUI() }
+
+        // ✅ 開始狀態變化（每 60 秒執行一次）
+        petUpdateManager.startUpdating()
+
         // 檢查權限
         checkPermissions()
+    }
+
+    private fun updateUI() {
+        petStatusTextView.text = "飢餓: ${petStatus.hunger} | 能量: ${petStatus.energy} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
+        Log.d("PetStatus", "飢餓: ${petStatus.hunger}, 能量: ${petStatus.energy}, 心情: ${petStatus.mood}")
     }
 
     override fun onResume() {
