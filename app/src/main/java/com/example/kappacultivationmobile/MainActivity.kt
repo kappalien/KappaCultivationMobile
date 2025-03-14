@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
         val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", true)
-        val dialogStepInterval = sharedPreferences.getInt("dialogStepInterval", 100)
 
         // 設定 OpenStreetMap 配置
         Configuration.getInstance().userAgentValue = packageName
@@ -134,7 +133,9 @@ class MainActivity : AppCompatActivity() {
             savedSteps,
             savedLevel,
             { steps, level, response ->
-                tvStatus.text = "等級: $level  |  累積步數: $steps"
+                runOnUiThread {
+                    tvStatus.text = "等級: $level  |  累積步數: $steps"
+                }
 
                 // 顯示角色對話
                 characterResponseTextView.text = response
@@ -143,12 +144,11 @@ class MainActivity : AppCompatActivity() {
                 // 3 秒後自動隱藏對話框
                 characterResponseTextView.postDelayed({
                     characterResponseTextView.visibility = View.GONE
-                }, 3000)
+                }, 6000)
             },
             levelInfoList,
             sharedPreferences,
-            characterResponse,
-            dialogStepInterval
+            characterResponse
         )
 
         // 是否開啟 GPS 定位

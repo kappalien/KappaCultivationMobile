@@ -23,8 +23,8 @@ class StepCounterHelper(
 
             var response = "" // 🔹 預設不顯示對話
 
-            // **🔹 只有當達到對話間隔時才顯示對話**
-            if (currentStepsInLevel % dialogStepInterval == 0) {
+            // *隨機機率觸發
+            if ((1..100).random() <= 20) { // 20% 機率觸發對話
                 response = characterResponse.getRandomResponseForSteps()
             }
 
@@ -37,11 +37,9 @@ class StepCounterHelper(
                 response = characterResponse.getAlmostLevelUpResponse() // 快升級的回應
             }
 
-            // ✅ 只有當 response 不是空的時候才更新 UI
-            if (response.isNotEmpty()) {
-                onStepCountChanged(currentStepsInLevel, currentLevel, response)
-                Log.d("CharacterResponse", "發送對話到 UI: $response")
-            }
+            // 更新 UI
+            onStepCountChanged(currentStepsInLevel, currentLevel, response)
+            Log.d("CharacterResponse", "發送對話到 UI: $response")
 
             // 存入 SharedPreferences
             with(sharedPreferences.edit()) {

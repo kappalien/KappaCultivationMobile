@@ -21,7 +21,7 @@
             android:id="@+id/switchBackgroundSteps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="背景執行步數計算" />
+            android:text="允許背景執行步數計算" />
     </androidx.cardview.widget.CardView>
 
     <!-- GPS 定位開關 -->
@@ -38,32 +38,5 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="啟用 GPS 定位" />
-    </androidx.cardview.widget.CardView>
-
-    <!-- 產生對話步數調整 -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="6dp"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/textViewDialogStep"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="調整產生對話步伐數"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_gravity="center" />
-
-        <SeekBar
-            android:id="@+id/seekBarDialogStep"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="500"
-            android:min="5"
-            android:progress="100"
-            android:layout_marginTop="8dp" />
     </androidx.cardview.widget.CardView>
 </LinearLayout>
