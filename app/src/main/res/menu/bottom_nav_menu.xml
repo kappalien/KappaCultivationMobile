@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:title="主頁" />
+
+    <item
+        android:id="@+id/nav_backpack"
+        android:title="背包" />
+
+    <item
+        android:id="@+id/nav_event"
+        android:title="事件" />
+</menu>

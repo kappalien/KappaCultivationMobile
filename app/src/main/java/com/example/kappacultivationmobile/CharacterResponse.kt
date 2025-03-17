@@ -1,6 +1,7 @@
 package com.example.kappacultivationmobile
 
 import kotlin.random.Random
+import android.util.Log
 
 class CharacterResponse {
     private val happyResponses = listOf(
@@ -36,7 +37,13 @@ class CharacterResponse {
     )
 
     fun getRandomResponseForSteps(): String {
-        return if (Random.nextBoolean()) happyResponses.random() else tiredResponses.random()
+        Log.d("CharacterResponse", "happyResponses 大小: ${happyResponses.size}, tiredResponses 大小: ${tiredResponses.size}")
+
+        val isHappy = Random.nextBoolean()
+        val response = if (isHappy) happyResponses.random() else tiredResponses.random()
+
+        Log.d("CharacterResponse", "選擇 ${if (isHappy) "快樂" else "疲倦"} 對話: $response")
+        return response
     }
 
     fun getLevelUpResponse(): String {

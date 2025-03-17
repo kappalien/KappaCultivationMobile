@@ -1,0 +1,54 @@
+package com.example.kappacultivationmobile
+
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+
+class RandomEventManager(
+    private val triggerEventUI: (String) -> Unit // UI 更新函數
+) {
+    private val handler = Handler(Looper.getMainLooper())
+    private val eventQueue = mutableListOf<String>() // 事件列表
+
+    private val eventRunner = object : Runnable {
+        override fun run() {
+            val randomChance = (1..100).random()
+            val event = when {
+                randomChance < 10 -> "遭遇敵人！⚔"
+                randomChance < 25 -> "發現靈草 🌿"
+                randomChance < 40 -> "找到寶藏 💎"
+                randomChance < 55 -> "遇見修仙 NPC 🧙"
+                else -> null
+            }
+
+            event?.let {
+                eventQueue.add(it) // 加入事件列表
+                triggerEventUI(it) // 顯示事件通知
+            }
+
+            handler.postDelayed(this, (30_000..90_000).random().toLong()) // 30~90 秒觸發一次
+        }
+    }
+
+    fun startEventLoop() {
+        handler.post(eventRunner) // 啟動事件循環
+    }
+
+    fun stopEventLoop() {
+        handler.removeCallbacks(eventRunner) // 停止觸發新的事件
+    }
+
+    fun getEvents(): List<String> {
+        return eventQueue.toList() // 確保回傳的是不可變列表
+    }
+
+    fun removeEvent(event: String) {
+        eventQueue.remove(event) // **移除特定事件**
+    }
+
+    fun clearEvents() {
+        if (eventQueue.isEmpty()) {
+            triggerEventUI("") // **當事件已清空時，隱藏 UI**
+        }
+    }
+}

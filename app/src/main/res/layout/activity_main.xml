@@ -37,7 +37,7 @@
         android:id="@+id/tv_pet_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="飢餓: 100 | 能量: 100 | 心情: 100 | 清潔: 100"
+        android:text="能量: 100 | 飢餓: 100 | 心情: 100 | 清潔: 100"
         android:textSize="18sp"
         android:textColor="#FFFFFF"
         android:background="#7732CD32"
@@ -46,6 +46,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"/>
+
+    <!-- 事件通知 -->
+    <TextView
+        android:id="@+id/tv_event_notification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="遭遇事件！"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:background="#88FF69B4"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tv_pet_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="20dp"/>
 
     <!-- 角色對話回應（對話框） -->
     <TextView
@@ -115,20 +130,20 @@
             android:backgroundTint="@color/button_color"/>
 
         <Button
-            android:id="@+id/button_feed"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="餵食"
-            android:alpha="0.5"
-            android:backgroundTint="@color/button_color"/>
-
-        <Button
             android:id="@+id/button_meditate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="修煉"
+            android:alpha="0.5"
+            android:backgroundTint="@color/button_color"/>
+
+        <Button
+            android:id="@+id/button_feed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="餵食"
             android:alpha="0.5"
             android:backgroundTint="@color/button_color"/>
 
@@ -151,6 +166,15 @@
             android:backgroundTint="@color/button_color"/>
 
         <Button
+            android:id="@+id/button_backpack"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="背包"
+            android:alpha="0.5"
+            android:backgroundTint="@color/button_color"/>
+
+        <Button
             android:id="@+id/buttonSettings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -159,5 +183,4 @@
             android:alpha="0.5"
             android:backgroundTint="@color/button_color"/>
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

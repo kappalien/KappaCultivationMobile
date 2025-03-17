@@ -22,10 +22,13 @@ class StepCounterHelper(
             val nextLevelSteps = levelInfoList[currentLevel - 1].nextLevelSteps // 需要的步數
 
             var response = "" // 🔹 預設不顯示對話
+            val randomChance = (1..100).random()
+            Log.d("CharacterResponse", "隨機機率: $randomChance，步數: $currentStepsInLevel，升級需求: $nextLevelSteps")
 
             // *隨機機率觸發
-            if ((1..100).random() <= 20) { // 20% 機率觸發對話
+            if (randomChance <= 20) { // 20% 機率觸發對話
                 response = characterResponse.getRandomResponseForSteps()
+                Log.d("CharacterResponse", "觸發一般對話: $response")
             }
 
             // 判斷是否升級
@@ -33,13 +36,15 @@ class StepCounterHelper(
                 currentLevel += 1 // 升級
                 currentStepsInLevel = 0 // 步數歸零
                 response = characterResponse.getLevelUpResponse() // 給升級回應
+                Log.d("CharacterResponse", "觸發升級對話: $response")
             } else if (nextLevelSteps - currentStepsInLevel in 1..10) {
                 response = characterResponse.getAlmostLevelUpResponse() // 快升級的回應
+                Log.d("CharacterResponse", "觸發即將升級對話: $response")
             }
 
             // 更新 UI
             onStepCountChanged(currentStepsInLevel, currentLevel, response)
-            Log.d("CharacterResponse", "發送對話到 UI: $response")
+            Log.d("CharacterResponse", "最終發送對話到 UI: $response")
 
             // 存入 SharedPreferences
             with(sharedPreferences.edit()) {

@@ -27,6 +27,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import android.util.Log
 
+
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
 
 class MainActivity : AppCompatActivity() {
@@ -62,6 +63,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var petStatus: PetStatus
     private lateinit var petActions: PetActions
     private lateinit var petUpdateManager: PetUpdateManager
+    private lateinit var randomEventManager: RandomEventManager
+    private lateinit var eventNotificationTextView: TextView
+
+    // 背包
+    private lateinit var backpack: Backpack
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,13 +75,28 @@ class MainActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
-        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", true)
+        // 初始化 LocationManager
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
+        val showOSM = sharedPreferences.getBoolean("showOSM", false)
 
         // 設定 OpenStreetMap 配置
         Configuration.getInstance().userAgentValue = packageName
 
         // 設定 Activity 的 Layout
         setContentView(R.layout.activity_main)
+
+        mapView = findViewById(R.id.mapView)
+
+        // 檢查是否要顯示 OSM 地圖
+        if (showOSM) {
+            mapView.visibility = View.VISIBLE
+            mapView.setTileSource(TileSourceFactory.MAPNIK)
+            mapView.setMultiTouchControls(true)
+        } else {
+            mapView.visibility = View.GONE // 隱藏 OSM
+        }
 
         // 設定按鈕
         val settingsButton: Button = findViewById(R.id.buttonSettings)
@@ -143,16 +164,19 @@ class MainActivity : AppCompatActivity() {
             { steps, level, response ->
                 runOnUiThread {
                     tvStatus.text = "等級: $level  |  累積步數: $steps"
+                    Log.d("CharacterResponse", "更新 UI：$response")
+
+                    if (response.isNotEmpty()) {
+                        characterResponseTextView.text = response
+                        characterResponseTextView.visibility = View.VISIBLE
+
+                        characterResponseTextView.postDelayed({
+                            characterResponseTextView.visibility = View.GONE
+                        }, 6000)
+                    } else {
+                        Log.d("CharacterResponse", "對話內容為空，不更新 UI")
+                    }
                 }
-
-                // 顯示角色對話
-                characterResponseTextView.text = response
-                characterResponseTextView.visibility = View.VISIBLE
-
-                // 3 秒後自動隱藏對話框
-                characterResponseTextView.postDelayed({
-                    characterResponseTextView.visibility = View.GONE
-                }, 6000)
             },
             levelInfoList,
             sharedPreferences,
@@ -160,9 +184,17 @@ class MainActivity : AppCompatActivity() {
         )
 
         // 是否開啟 GPS 定位
-        if (!gpsEnabled) {
-            locationManager.removeUpdates(locationListener)
-            isTrackingLocation = false
+        if (gpsEnabled) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                getLocationAndSetMapCenter()
+            } else {
+                checkPermissions() // 只有當權限真的缺少時，才請求權限
+            }
+        } else {
+            if (::locationManager.isInitialized) {
+                locationManager.removeUpdates(locationListener)
+                isTrackingLocation = false
+            }
         }
 
         // 設定角色資訊按鈕的點擊事件
@@ -193,9 +225,6 @@ class MainActivity : AppCompatActivity() {
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
 
-        // 初始化 LocationManager
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
         // ✅ 電子雞系統初始化
         petStatus = PetStatus()
         petActions = PetActions(petStatus)
@@ -210,13 +239,118 @@ class MainActivity : AppCompatActivity() {
         // ✅ 開始狀態變化（每 60 秒執行一次）
         petUpdateManager.startUpdating()
 
+        // 隨機事件
+        eventNotificationTextView = findViewById(R.id.tv_event_notification)
+
+        randomEventManager = RandomEventManager { event ->
+            runOnUiThread {
+                eventNotificationTextView.text = event
+                eventNotificationTextView.visibility = View.VISIBLE
+            }
+        }
+
+        eventNotificationTextView.setOnClickListener {
+            showEventList()
+        }
+
+        randomEventManager.startEventLoop() // 啟動隨機事件
+
+        // 背包
+        backpack = Backpack()
+
+        findViewById<Button>(R.id.button_backpack).setOnClickListener {
+            showBackpack()
+        }
+
         // 檢查權限
         checkPermissions()
     }
 
     private fun updateUI() {
-        petStatusTextView.text = "飢餓: ${petStatus.hunger} | 能量: ${petStatus.energy} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
-        Log.d("PetStatus", "飢餓: ${petStatus.hunger}, 能量: ${petStatus.energy}, 心情: ${petStatus.mood}")
+        petStatusTextView.text = "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
+        Log.d("PetStatus", "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}")
+    }
+
+    private fun showEventList() {
+        val events = randomEventManager.getEvents()
+        if (events.isEmpty()) return
+
+        val eventListDialog = android.app.AlertDialog.Builder(this)
+            .setTitle("遭遇事件")
+            .setItems(events.toTypedArray()) { _, which ->
+                handleEvent(events[which]) // **點擊事件後處理**
+            }
+            .setPositiveButton("關閉") { _, _ -> }
+            .show()
+    }
+
+    private fun handleEvent(event: String) {
+        when (event) {
+            "遭遇敵人！⚔" -> startBattle()
+            "發現靈草 🌿" -> collectHerb()
+            "找到寶藏 💎" -> collectTreasure()
+            "遇見修仙 NPC 🧙" -> talkToNPC()
+        }
+
+        randomEventManager.removeEvent(event) // **玩家點擊後，移除該事件**
+
+        if (randomEventManager.getEvents().isEmpty()) {
+            eventNotificationTextView.visibility = View.GONE // **當事件都處理完後，隱藏通知**
+        }
+    }
+
+    private fun startBattle() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("戰鬥開始！")
+            .setMessage("你遇到了一名敵人！是否進行戰鬥？")
+            .setPositiveButton("戰鬥") { _, _ ->
+                // 這裡可以加入戰鬥邏輯
+            }
+            .setNegativeButton("逃跑", null)
+            .show()
+    }
+
+    private fun collectHerb() {
+        backpack.addItem("靈草")
+        android.app.AlertDialog.Builder(this)
+            .setTitle("發現靈草！")
+            .setMessage("你撿到了一株靈草，已存入背包！")
+            .setPositiveButton("確定", null)
+            .show()
+    }
+
+    private fun collectTreasure() {
+        backpack.addItem("寶藏")
+        android.app.AlertDialog.Builder(this)
+            .setTitle("找到寶藏！")
+            .setMessage("你挖到了一個寶箱，已存入背包！")
+            .setPositiveButton("確定", null)
+            .show()
+    }
+
+    private fun talkToNPC() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("遇見修仙 NPC")
+            .setMessage("NPC: 你好，修行者。請繼續努力修煉！")
+            .setPositiveButton("確定", null)
+            .show()
+    }
+
+    private fun showBackpack() {
+        val items = backpack.getItems()
+        if (items.isEmpty()) {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("背包")
+                .setMessage("你的背包是空的！")
+                .setPositiveButton("確定", null)
+                .show()
+        } else {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("背包")
+                .setItems(items.toTypedArray(), null)
+                .setPositiveButton("關閉", null)
+                .show()
+        }
     }
 
     override fun onResume() {
@@ -233,8 +367,16 @@ class MainActivity : AppCompatActivity() {
                 SensorManager.SENSOR_DELAY_UI // ✅ 讓 UI 更新更即時
             )
         }
-        // ✅ 每次回到 App 時檢查 GPS 設定
-        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", true)
+
+        // 檢查OSM地圖是否顯示
+        // **重新讀取最新的 GPS & OSM 設定**
+        val showOSM = sharedPreferences.getBoolean("showOSM", false)
+        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
+
+        // **更新 OSM 顯示狀態**
+        mapView.visibility = if (showOSM) View.VISIBLE else View.GONE
+
+        // **檢查 GPS 設定**
         if (gpsEnabled) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 getLocationAndSetMapCenter()
@@ -324,6 +466,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 mapView.controller.setCenter(startPoint)
+                mapView.setMultiTouchControls(false) // 啟用手勢縮放
                 mapView.controller.setZoom(20.0)
 
                 // 移除舊的標記，避免重複顯示
