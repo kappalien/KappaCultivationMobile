@@ -88,14 +88,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mapView = findViewById(R.id.mapView)
+        val staticBackground = findViewById<ImageView>(R.id.staticBackground)
 
         // 檢查是否要顯示 OSM 地圖
         if (showOSM) {
             mapView.visibility = View.VISIBLE
+            staticBackground.visibility = View.GONE
             mapView.setTileSource(TileSourceFactory.MAPNIK)
             mapView.setMultiTouchControls(true)
         } else {
-            mapView.visibility = View.GONE // 隱藏 OSM
+            mapView.visibility = View.GONE
+            staticBackground.visibility = View.VISIBLE
         }
 
         // 設定按鈕
@@ -394,7 +397,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         if (::mapView.isInitialized) {
-            mapView.onPause()
+            mapView.onPause()   // 停止地圖更新，減少背景運行
         }
 
         // ✅ 依據使用者設定決定是否停止步數計算

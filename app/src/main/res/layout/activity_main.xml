@@ -4,17 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- OpenStreetMap 地圖區塊（背景） -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        android:layout_height="match_parent">
+
+        <!-- 靜態背景圖片（預設隱藏，當 OSM 關閉時顯示） -->
+        <ImageView
+            android:id="@+id/staticBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background_image"
+            android:visibility="gone"/>
+
+        <!-- OSM 地圖 -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
 
     <!-- 顯示等級與步數 -->
     <TextView
