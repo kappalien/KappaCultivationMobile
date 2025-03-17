@@ -259,7 +259,9 @@ class MainActivity : AppCompatActivity() {
         randomEventManager.startEventLoop() // 啟動隨機事件
 
         // 背包
-        backpack = Backpack()
+        if (!::backpack.isInitialized) {
+            backpack = Backpack()  // 只初始化一次，避免物品遺失
+        }
 
         findViewById<Button>(R.id.button_backpack).setOnClickListener {
             showBackpack()
@@ -341,6 +343,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showBackpack() {
         val items = backpack.getItems()
+
         if (items.isEmpty()) {
             android.app.AlertDialog.Builder(this)
                 .setTitle("背包")
@@ -348,9 +351,17 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("確定", null)
                 .show()
         } else {
+            // **計算相同物品數量**
+            val itemCountMap = items.groupingBy { it }.eachCount()
+
+            // **轉換成 "物品 * 數量" 格式**
+            val displayItems = itemCountMap.map { (item, count) ->
+                if (count > 1) "$item * $count" else item
+            }.toTypedArray()
+
             android.app.AlertDialog.Builder(this)
                 .setTitle("背包")
-                .setItems(items.toTypedArray(), null)
+                .setItems(displayItems, null)  // ✅ 確保顯示累積物品
                 .setPositiveButton("關閉", null)
                 .show()
         }
