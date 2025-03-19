@@ -25,6 +25,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import android.widget.Toast
 import android.util.Log
 
 
@@ -49,15 +50,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var characterInfoButton: Button
     private lateinit var sharedPreferences: SharedPreferences
 
-    private val KEY_STEPS = "currentStepsInLevel"
-    private val KEY_LEVEL = "currentLevel"
-
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
 
     private var isCharacterInfoVisible = false // 控制角色資訊的顯示狀態
     private lateinit var levelInfoList: List<LevelInfo>
-    private var savedLevel = 1
 
     // 互動功能
     private lateinit var petStatus: PetStatus
@@ -140,8 +137,8 @@ class MainActivity : AppCompatActivity() {
         characterInfo.visibility = View.GONE
 
         // 讀取 SharedPreferences 存儲的數據
-        val savedSteps = sharedPreferences.getInt(KEY_STEPS, 0) // 🔹 讀取已儲存的步數
-        savedLevel = sharedPreferences.getInt(KEY_LEVEL, 1) // 讀取等級
+        val savedSteps = sharedPreferences.getInt("currentStepsInLevel", 0) // 預設為 0
+        val savedLevel = sharedPreferences.getInt("currentLevel", 1) // 預設等級 1
 
         tvStatus.text = "等級: $savedLevel  |  累積步數: $savedSteps" // 讀取最後一次的累加數值
 
@@ -169,15 +166,20 @@ class MainActivity : AppCompatActivity() {
                     tvStatus.text = "等級: $level  |  累積步數: $steps"
                     Log.d("CharacterResponse", "更新 UI：$response")
 
+                    characterResponseTextView.removeCallbacks(null) // **防止舊的 postDelayed() 還在運行**
+
                     if (response.isNotEmpty()) {
                         characterResponseTextView.text = response
                         characterResponseTextView.visibility = View.VISIBLE
 
+                        // **確保對話不會閃爍**
                         characterResponseTextView.postDelayed({
-                            characterResponseTextView.visibility = View.GONE
+                            if (characterResponseTextView.text == response) {
+                                characterResponseTextView.visibility = View.GONE
+                            }
                         }, 6000)
                     } else {
-                        Log.d("CharacterResponse", "對話內容為空，不更新 UI")
+                        characterResponseTextView.visibility = View.GONE
                     }
                 }
             },
@@ -258,10 +260,8 @@ class MainActivity : AppCompatActivity() {
 
         randomEventManager.startEventLoop() // 啟動隨機事件
 
-        // 背包
-        if (!::backpack.isInitialized) {
-            backpack = Backpack()  // 只初始化一次，避免物品遺失
-        }
+        // **初始化背包**
+        backpack = Backpack(this)
 
         findViewById<Button>(R.id.button_backpack).setOnClickListener {
             showBackpack()
@@ -316,7 +316,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun collectHerb() {
-        backpack.addItem("靈草")
+        val herb = Item(
+            itemId = "herb",
+            name = "靈草",
+            quantity = 1,
+            description = "一種能恢復生命的草藥。",
+            rarity = "普通",
+            value = 10,
+            type = "藥水",
+            effects = mapOf("hp" to 50),
+            sellable = true
+        )
+        backpack.addItem(herb)
+
         android.app.AlertDialog.Builder(this)
             .setTitle("發現靈草！")
             .setMessage("你撿到了一株靈草，已存入背包！")
@@ -325,7 +337,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun collectTreasure() {
-        backpack.addItem("寶藏")
+        val treasure = Item(
+            itemId = "treasure",
+            name = "寶藏",
+            quantity = 1,
+            description = "閃閃發光的金幣，能賣個好價錢。",
+            rarity = "史詩",
+            value = 500,
+            type = "貨幣",
+            effects = emptyMap(),
+            sellable = true
+        )
+        backpack.addItem(treasure)  // ✅ 傳入 `Item` 物件
+
         android.app.AlertDialog.Builder(this)
             .setTitle("找到寶藏！")
             .setMessage("你挖到了一個寶箱，已存入背包！")
@@ -342,29 +366,61 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showBackpack() {
-        val items = backpack.getItems()
-
-        if (items.isEmpty()) {
-            android.app.AlertDialog.Builder(this)
-                .setTitle("背包")
-                .setMessage("你的背包是空的！")
-                .setPositiveButton("確定", null)
-                .show()
-        } else {
-            // **計算相同物品數量**
-            val itemCountMap = items.groupingBy { it }.eachCount()
-
-            // **轉換成 "物品 * 數量" 格式**
-            val displayItems = itemCountMap.map { (item, count) ->
-                if (count > 1) "$item * $count" else item
-            }.toTypedArray()
-
-            android.app.AlertDialog.Builder(this)
-                .setTitle("背包")
-                .setItems(displayItems, null)  // ✅ 確保顯示累積物品
-                .setPositiveButton("關閉", null)
-                .show()
+        if (supportFragmentManager.findFragmentByTag("BackpackDialog") == null) {
+            val items = backpack.getItems()
+            if (items.isEmpty()) {
+                android.app.AlertDialog.Builder(this)
+                    .setTitle("你的背包是空的！")
+                    .setMessage("你目前沒有任何物品，試試去探索或戰鬥來獲取物品！")
+                    .setPositiveButton("確定", null)
+                    .show()
+            } else {
+                val backpackDialog = BackpackDialogFragment(backpack, ::useItem, ::sellItem)
+                backpackDialog.show(supportFragmentManager, "BackpackDialog")
+            }
         }
+    }
+
+    // **使用物品**
+    private fun useItem(itemId: String) {
+        val item = backpack.getItems().find { it.itemId == itemId }
+        if (item != null) {
+            if (item.effects.containsKey("hp")) {
+                Log.d("Backpack", "使用 ${item.name} 回復 ${item.effects["hp"]} 生命值")
+            }
+            backpack.removeItem(itemId, 1) {
+                showBackpack()  // **刷新 UI**
+            }
+        }
+    }
+
+    // **賣出物品**
+    private fun sellItem(itemId: String) {
+        val item = backpack.getItems().find { it.itemId == itemId }
+        if (item != null) {
+            if (!item.sellable) {
+                Log.w("Backpack", "無法出售 ${item.name}，該物品不可販賣！")
+                return
+            }
+
+            val goldEarned = item.value
+            val currentGold = sharedPreferences.getInt("player_gold", 0)
+
+            // ✅ **正確存入金幣**
+            sharedPreferences.edit()
+                .putInt("player_gold", currentGold + goldEarned)  // **存入正確的金幣數據**
+                .apply()
+
+            // ✅ **移除物品並刷新 UI**
+            backpack.removeItem(itemId, 1) {
+                showToast("售出 ${item.name} 獲得 $goldEarned 金幣！")
+                showBackpack()  // **刷新 UI**
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {

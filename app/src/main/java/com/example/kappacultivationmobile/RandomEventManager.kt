@@ -2,7 +2,6 @@ package com.example.kappacultivationmobile
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 
 class RandomEventManager(
     private val triggerEventUI: (String) -> Unit // UI 更新函數
@@ -14,11 +13,11 @@ class RandomEventManager(
         override fun run() {
             val randomChance = (1..100).random()
             val event = when {
-                randomChance < 10 -> "遭遇敵人！⚔"
-                randomChance < 25 -> "發現靈草 🌿"
-                randomChance < 40 -> "找到寶藏 💎"
-                randomChance < 55 -> "遇見修仙 NPC 🧙"
-                else -> null
+                randomChance < 20 -> "遭遇敵人！⚔" // 20%
+                randomChance < 45 -> "發現靈草 🌿" // 25%
+                randomChance < 65 -> "找到寶藏 💎" // 20%
+                randomChance < 80 -> "遇見修仙 NPC 🧙" // 15%
+                else -> null // 20% 無事件
             }
 
             event?.let {

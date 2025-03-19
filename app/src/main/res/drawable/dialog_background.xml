@@ -4,4 +4,6 @@
     <corners android:radius="16dp"/>
     <solid android:color="@android:color/white"/>
     <padding android:left="20dp" android:right="20dp"/>
+    <solid android:color="#77000000"/> <!-- 半透明黑色 -->
+    <corners android:radius="16dp"/> <!-- 圓角 -->
 </shape>
