@@ -1,10 +1,10 @@
 package com.example.kappacultivationmobile
 
 import android.content.Context
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
+import android.util.Log
 
 // **物品數據模型**
 data class Item(
@@ -24,11 +24,15 @@ class Backpack(private val context: Context) {
     private val fileName = "backpack.json"
     private val gson = Gson()
 
-    private var items: MutableMap<String, Item> = loadBackpack() // **讀取背包數據**
+    private var items: MutableMap<String, Item> = mutableMapOf() // **初始化為空的 Map**
+
+    init {
+        loadBackpack() // ✅ `loadBackpack()` 內部會更新 `items`
+    }
 
     // **獲取所有物品**
     fun getItems(): List<Item> {
-        return items.values.filterNotNull().toList()
+        return items.values.filterNotNull().filter { it.itemId.isNotBlank() }.toList()
     }
 
     // **新增物品（若已存在則數量 +1）**
@@ -68,19 +72,21 @@ class Backpack(private val context: Context) {
     }
 
     // **讀取 JSON（若無檔案則回傳空背包）**
-    private fun loadBackpack(): MutableMap<String, Item> {
+    private fun loadBackpack() {
         val file = File(context.filesDir, fileName)
-        return if (file.exists()) {
+        if (file.exists()) {
             try {
                 val json = file.readText()
-                val type = object : TypeToken<Map<String, Item>>() {}.type
-                gson.fromJson<Map<String, Item>>(json, type)?.toMutableMap() ?: mutableMapOf()
+                val wrapperType = object : TypeToken<Map<String, Map<String, Item>>>() {}.type
+                val jsonObject = gson.fromJson<Map<String, Map<String, Item>>>(json, wrapperType)
+                val loadedItems = jsonObject["items"] ?: mutableMapOf()
+                items.clear()
+                items.putAll(loadedItems)
             } catch (e: Exception) {
                 Log.e("Backpack", "讀取 JSON 錯誤: ${e.message}")
-                mutableMapOf()  // 🔹 讀取錯誤時回傳空背包
+                items.clear()
             }
-        } else {
-            mutableMapOf()  // 🔹 JSON 不存在時回傳空背包
         }
     }
+
 }

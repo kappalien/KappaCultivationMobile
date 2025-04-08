@@ -26,6 +26,9 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
+import android.widget.LinearLayout
 import android.util.Log
 
 
@@ -64,7 +67,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var eventNotificationTextView: TextView
 
     // 背包
-    private lateinit var backpack: Backpack
+    private lateinit var backpack: Backpack // 背包管理
+    private lateinit var rvBackpack: RecyclerView // 背包物品列表
+    private lateinit var backpackContainer: LinearLayout // 背包 UI 容器
+    private lateinit var btnCloseBackpack: Button // 關閉背包按鈕
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,6 +118,11 @@ class MainActivity : AppCompatActivity() {
         characterInfo = findViewById(R.id.character_info)
         characterResponseTextView = findViewById(R.id.character_response)
         characterInfoButton = findViewById(R.id.button_info) // 角色資訊按鈕
+
+        // 初始化 UI
+        rvBackpack = findViewById(R.id.rvBackpack)
+        backpackContainer = findViewById(R.id.backpackContainer)
+        btnCloseBackpack = findViewById(R.id.btnCloseBackpack)
 
         // 初始化 locationListener
         locationListener = object : android.location.LocationListener {
@@ -211,9 +222,10 @@ class MainActivity : AppCompatActivity() {
             if (isCharacterInfoVisible) {
                 if (savedLevel in 1..levelInfoList.size) {
                     val levelInfo = levelInfoList[savedLevel - 1]
+                    val currentGold = sharedPreferences.getInt("player_gold", 0)
                     characterInfo.text = getString(
                         R.string.character_info, levelInfo.level, levelInfo.health,
-                        levelInfo.mana, levelInfo.attack, levelInfo.defense
+                        levelInfo.mana, levelInfo.attack, levelInfo.defense, currentGold
                     )
                     Log.d("CharacterInfo", "角色資訊按鈕點擊後更新: ${characterInfo.text}")
                 } else {
@@ -262,6 +274,22 @@ class MainActivity : AppCompatActivity() {
 
         // **初始化背包**
         backpack = Backpack(this)
+
+        // 設置 RecyclerView (Grid 格式，每行 3 個)
+        rvBackpack.layoutManager = GridLayoutManager(this, 3)
+
+        // 預設隱藏背包
+        backpackContainer.visibility = View.GONE
+
+        // 設定 "打開背包" 按鈕
+        findViewById<Button>(R.id.button_backpack).setOnClickListener {
+            showBackpack()
+        }
+
+        // 設定 "關閉背包" 按鈕
+        btnCloseBackpack.setOnClickListener {
+            backpackContainer.visibility = View.GONE
+        }
 
         findViewById<Button>(R.id.button_backpack).setOnClickListener {
             showBackpack()
@@ -366,58 +394,93 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showBackpack() {
-        if (supportFragmentManager.findFragmentByTag("BackpackDialog") == null) {
-            val items = backpack.getItems()
-            if (items.isEmpty()) {
-                android.app.AlertDialog.Builder(this)
-                    .setTitle("你的背包是空的！")
-                    .setMessage("你目前沒有任何物品，試試去探索或戰鬥來獲取物品！")
-                    .setPositiveButton("確定", null)
-                    .show()
-            } else {
-                val backpackDialog = BackpackDialogFragment(backpack, ::useItem, ::sellItem)
-                backpackDialog.show(supportFragmentManager, "BackpackDialog")
-            }
+        val items = backpack.getItems()
+
+        if (items.isEmpty()) {
+            Toast.makeText(this, "你的背包是空的！", Toast.LENGTH_SHORT).show()
+        } else {
+            rvBackpack.adapter = BackpackAdapter(items.toMutableList(), ::onItemClicked)
+            backpackContainer.visibility = View.VISIBLE
         }
+    }
+
+    // 點擊物品時的處理
+    private fun onItemClicked(item: Item) {
+        val options = mutableListOf<String>()
+        if (item.effects.isNotEmpty()) options.add("使用")
+        if (item.sellable) options.add("出售")
+
+        if (options.isEmpty()) {
+            showToast("這個物品無法使用或出售")
+            return
+        }
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("選擇操作 - ${item.name}")
+            .setItems(options.toTypedArray()) { _, which ->
+                when (options[which]) {
+                    "使用" -> useItem(item.itemId)
+                    "出售" -> sellItem(item.itemId)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     // **使用物品**
     private fun useItem(itemId: String) {
         val item = backpack.getItems().find { it.itemId == itemId }
+
         if (item != null) {
-            if (item.effects.containsKey("hp")) {
-                Log.d("Backpack", "使用 ${item.name} 回復 ${item.effects["hp"]} 生命值")
-            }
+            // ✅ 僅顯示使用訊息
+            showToast("你使用了 ${item.name}")
+
+            // ✅ 扣除物品數量，並刷新背包畫面
             backpack.removeItem(itemId, 1) {
-                showBackpack()  // **刷新 UI**
+                showBackpack()
             }
         }
     }
 
+
     // **賣出物品**
     private fun sellItem(itemId: String) {
         val item = backpack.getItems().find { it.itemId == itemId }
+
         if (item != null) {
             if (!item.sellable) {
                 Log.w("Backpack", "無法出售 ${item.name}，該物品不可販賣！")
                 return
             }
 
+            // ✅ 計算金幣與更新
             val goldEarned = item.value
             val currentGold = sharedPreferences.getInt("player_gold", 0)
+            val newGold = currentGold + goldEarned
+            sharedPreferences.edit().putInt("player_gold", newGold).apply()
 
-            // ✅ **正確存入金幣**
-            sharedPreferences.edit()
-                .putInt("player_gold", currentGold + goldEarned)  // **存入正確的金幣數據**
-                .apply()
-
-            // ✅ **移除物品並刷新 UI**
+            // ✅ 移除物品並刷新 UI
             backpack.removeItem(itemId, 1) {
                 showToast("售出 ${item.name} 獲得 $goldEarned 金幣！")
-                showBackpack()  // **刷新 UI**
+                showBackpack()
+
+                // ✅ 如果角色資訊是開啟的，更新金幣顯示
+                if (isCharacterInfoVisible) {
+                    val savedLevel = sharedPreferences.getInt("currentLevel", 1)
+                    if (savedLevel in 1..levelInfoList.size) {
+                        val levelInfo = levelInfoList[savedLevel - 1]
+                        characterInfo.text = getString(
+                            R.string.character_info,
+                            levelInfo.level, levelInfo.health,
+                            levelInfo.mana, levelInfo.attack,
+                            levelInfo.defense, newGold
+                        )
+                    }
+                }
             }
         }
     }
+
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

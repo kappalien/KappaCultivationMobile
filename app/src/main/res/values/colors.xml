@@ -7,4 +7,7 @@
     <color name="colorOnSecondary">#000000</color>
     <color name="button_color">#99ABB2B9</color>
     <color name="semi_transparent">#80000000</color> <!-- 半透明黑色 -->
+    <color name="item_name_color">#000000</color> <!-- 物品名稱顏色 (黑色) -->
+    <color name="item_rarity_color">#888888</color> <!-- 物品稀有度顏色 (灰色) -->
+    <color name="item_value_color">#FFD700</color> <!-- 物品價值顏色 (金色) -->
 </resources>

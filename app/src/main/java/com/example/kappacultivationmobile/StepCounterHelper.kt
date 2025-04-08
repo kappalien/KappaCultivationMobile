@@ -21,6 +21,13 @@ class StepCounterHelper(
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             currentStepsInLevel += 1
+            
+            // ✅ 儲存最新步數與等級
+            with(sharedPreferences.edit()) {
+                putInt("currentStepsInLevel", currentStepsInLevel)
+                putInt("currentLevel", currentLevel) // 若未來升級這會有幫助
+                apply()
+            }
             val nextLevelSteps = levelInfoList[currentLevel - 1].nextLevelSteps
 
             var response = ""

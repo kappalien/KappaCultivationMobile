@@ -25,7 +25,7 @@ class RandomEventManager(
                 triggerEventUI(it) // 顯示事件通知
             }
 
-            handler.postDelayed(this, (30_000..90_000).random().toLong()) // 30~90 秒觸發一次
+            handler.postDelayed(this, (300_000..600_000).random().toLong()) // 5~10 分鐘 秒觸發一次
         }
     }
 
