@@ -1,0 +1,110 @@
+[
+  {
+    "id": "alien",
+    "name": "外星人",
+    "health": 120,
+    "attack": 20,
+    "defense": 8,
+    "skills": [
+      "激光射線",
+      "精神衝擊"
+    ],
+    "image": "alien.png"
+  },
+  {
+    "id": "cat",
+    "name": "貓妖",
+    "health": 80,
+    "attack": 12,
+    "defense": 5,
+    "skills": [
+      "貓爪揮擊",
+      "催眠瞳光"
+    ],
+    "image": "cat.png"
+  },
+  {
+    "id": "chicken",
+    "name": "戰鬥雞",
+    "health": 70,
+    "attack": 10,
+    "defense": 4,
+    "skills": [
+      "啄擊",
+      "飛踢"
+    ],
+    "image": "chicken.png"
+  },
+  {
+    "id": "dog",
+    "name": "地獄犬",
+    "health": 110,
+    "attack": 18,
+    "defense": 6,
+    "skills": [
+      "雙重撕咬",
+      "惡吼"
+    ],
+    "image": "dog.png"
+  },
+  {
+    "id": "ghost",
+    "name": "怨靈",
+    "health": 90,
+    "attack": 14,
+    "defense": 6,
+    "skills": [
+      "怨念波",
+      "恐懼詛咒"
+    ],
+    "image": "ghost.png"
+  },
+  {
+    "id": "monkey",
+    "name": "靈猴",
+    "health": 100,
+    "attack": 15,
+    "defense": 7,
+    "skills": [
+      "靈活一擊",
+      "搶奪"
+    ],
+    "image": "monkey.png"
+  },
+  {
+    "id": "monster",
+    "name": "惡魔獸",
+    "health": 140,
+    "attack": 22,
+    "defense": 10,
+    "skills": [
+      "地裂猛擊",
+      "黑暗之爪"
+    ],
+    "image": "monster.png"
+  },
+  {
+    "id": "panda",
+    "name": "醉拳熊貓",
+    "health": 130,
+    "attack": 16,
+    "defense": 12,
+    "skills": [
+      "醉拳連打",
+      "滾地衝鋒"
+    ],
+    "image": "panda.png"
+  },
+  {
+    "id": "tiger",
+    "name": "猛虎",
+    "health": 125,
+    "attack": 19,
+    "defense": 9,
+    "skills": [
+      "猛撲",
+      "虎嘯震懾"
+    ],
+    "image": "tiger.png"
+  }
+]

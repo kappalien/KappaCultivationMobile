@@ -13,13 +13,11 @@ class RandomEventManager(
         override fun run() {
             val randomChance = (1..100).random()
             val event = when {
-//                randomChance < 20 -> "遭遇敵人！⚔"
-//                randomChance < 45 -> "發現靈草 🌿"
-//                randomChance < 65 -> "找到寶藏 💎"
-//                randomChance < 80 -> "遇見修仙 NPC 🧙"
-                randomChance < 30 -> "發現靈草 🌿"
-                randomChance < 60 -> "找到寶藏 💎"
-                else -> null // 20% 無事件
+                randomChance <= 30 -> "遭遇敵人！⚔"          // 1~30
+                randomChance <= 60 -> "發現靈草 🌿"          // 31~60
+                randomChance <= 80 -> "找到寶藏 💎"          // 61~80
+                randomChance <= 90 -> "遇見修仙 NPC 🧙"      // 81~90
+                else -> null                                 // 91~100 → 無事件
             }
 
             event?.let {
@@ -27,7 +25,8 @@ class RandomEventManager(
                 triggerEventUI(it) // 顯示事件通知
             }
 
-            handler.postDelayed(this, (300_000..600_000).random().toLong()) // 5~10 分鐘 秒觸發一次
+//            handler.postDelayed(this, (300_000..600_000).random().toLong()) // 5~10 分鐘 秒觸發一次
+            handler.postDelayed(this, (60_000).toLong()) // 5~10 分鐘 秒觸發一次
         }
     }
 

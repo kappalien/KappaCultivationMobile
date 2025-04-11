@@ -13,7 +13,7 @@ class StepCounterHelper(
     private val levelInfoList: List<LevelInfo>,
     private val sharedPreferences: SharedPreferences,
     private val characterResponse: CharacterResponse, // 角色回應
-    private var dialogStepInterval: Int = 60 // 🔹 新增：可以設定多少步顯示一次對話（預設 100 步）
+    private var dialogStepInterval: Int = 30 // 🔹 新增：可以設定多少步顯示一次對話（預設 100 步）
 ) : SensorEventListener {
 
     private var lastDialogStep = 0 // 🔹 **記錄上次顯示對話的步數**

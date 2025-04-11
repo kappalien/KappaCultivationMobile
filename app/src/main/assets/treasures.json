@@ -109,7 +109,7 @@
     "value": 900,
     "type": "裝備",
     "effects": {
-      "defense": 5  // 例如，增加防禦力
+      "defense": 5
     },
     "sellable": true
   }

@@ -25,6 +25,8 @@
             android:name="org.osmdroid.OsmdroidTileProvider.UserAgent"
             android:value="KappaCultivationMobile" />
 
+        <activity android:name=".BattleActivity" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

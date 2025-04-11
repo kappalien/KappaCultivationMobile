@@ -39,6 +39,8 @@ import android.text.InputType
 import android.widget.EditText
 import android.view.ViewGroup.LayoutParams
 import java.util.Calendar
+import com.example.kappacultivationmobile.model.Enemy
+
 
 
 
@@ -112,7 +114,9 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
 
-    private lateinit var levelInfoList: List<LevelInfo>
+    private lateinit var levelInfoList: List<LevelInfo> // 等級資訊
+    private lateinit var playerInfo: LevelInfo  // 角色資訊
+
 
     // 互動功能
     private lateinit var petStatus: PetStatus
@@ -277,6 +281,9 @@ class MainActivity : AppCompatActivity() {
         levelInfoList = Gson().fromJson(jsonString, typeToken<List<LevelInfo>>().type)
         Log.d("CharacterInfo", "levelInfoList 解析後的大小: ${levelInfoList.size}")
 
+        // 讀取敵人.json
+        loadEnemiesFromJson()
+
         // 確保 JSON 正常讀取
         if (levelInfoList.isEmpty()) {
             Log.e("CharacterInfo", "levelInfoList 為空，可能 JSON 讀取失敗！")
@@ -349,7 +356,24 @@ class MainActivity : AppCompatActivity() {
         petUpdateManager = PetUpdateManager(petStatus) { updateUI() }
 
         // ✅ 綁定 UI 按鈕
-        findViewById<Button>(R.id.button_feed).setOnClickListener { petActions.feed(); updateUI() }
+        findViewById<Button>(R.id.button_feed).setOnClickListener {
+            petActions.feed()
+            updateUI()
+
+            // ✅ 回血處理邏輯放這裡（不要放在 PetActions）
+            val currentLevel = sharedPreferences.getInt("currentLevel", 1)
+            val levelInfo = levelInfoList[currentLevel - 1]
+            val maxHp = levelInfo.health
+
+            val currentHp = sharedPreferences.getInt("currentHp", maxHp)
+            val restoredHp = (maxHp * 0.2).toInt()
+            val newHp = (currentHp + restoredHp).coerceAtMost(maxHp)
+
+            sharedPreferences.edit().putInt("currentHp", newHp).apply()
+//            Toast.makeText(this, "你餵食了角色，恢復 $restoredHp 點 HP！", Toast.LENGTH_SHORT).show()
+
+            updateCharacterInfo()
+        }
         findViewById<Button>(R.id.button_meditate).setOnClickListener { petActions.meditate(); updateUI() }
         findViewById<Button>(R.id.button_play).setOnClickListener { petActions.play(); updateUI() }
         findViewById<Button>(R.id.button_clean).setOnClickListener { petActions.clean(); updateUI() }
@@ -410,6 +434,19 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
     }
 
+    // 遭遇戰鬥
+    private lateinit var enemies: List<Enemy>
+    private fun loadEnemiesFromJson() {
+        try {
+            val json = assets.open("enemies.json").bufferedReader().use { it.readText() }
+            val type = object : TypeToken<List<Enemy>>() {}.type
+            enemies = Gson().fromJson(json, type)
+            Log.d("EnemyData", "共載入敵人 ${enemies.size} 名")
+        } catch (e: Exception) {
+            Log.e("EnemyData", "讀取敵人資料失敗：${e.message}")
+        }
+    }
+
     private fun updateBackgroundForTime() {
         val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
@@ -426,8 +463,10 @@ class MainActivity : AppCompatActivity() {
         if (savedLevel in 1..levelInfoList.size) {
             val levelInfo = levelInfoList[savedLevel - 1]
             val currentGold = sharedPreferences.getInt("player_gold", 0)
+            val currentHp = sharedPreferences.getInt("currentHp", levelInfo.health) // 預設滿血
             characterInfo.text = getString(
-                R.string.character_info, levelInfo.level, levelInfo.health,
+                R.string.character_info_with_hp,
+                levelInfo.level, currentHp, levelInfo.health,
                 levelInfo.mana, levelInfo.attack, levelInfo.defense, currentGold
             )
             Log.d("CharacterInfo", "角色資訊更新: ${characterInfo.text}")
@@ -540,11 +579,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleEvent(event: String) {
         when (event) {
-//            "遭遇敵人！⚔" -> startBattle()
-//            "遇見修仙 NPC 🧙" -> talkToNPC()
+            "遭遇敵人！⚔" -> startBattle()
             "發現靈草 🌿" -> collectHerb()
             "找到寶藏 💎" -> collectTreasure()
-
+            "遇見修仙 NPC 🧙" -> talkToNPC()
         }
 
         randomEventManager.removeEvent(event)
@@ -555,15 +593,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startBattle() {
-        android.app.AlertDialog.Builder(this)
-            .setTitle("戰鬥開始！")
-            .setMessage("你遇到了一名敵人！是否進行戰鬥？")
-            .setPositiveButton("戰鬥") { _, _ ->
-                // 這裡可以加入戰鬥邏輯
-            }
-            .setNegativeButton("逃跑", null)
-            .show()
+        val selectedEnemy = enemies.random()
+        val intent = Intent(this, BattleActivity::class.java)
+        intent.putExtra("enemy", selectedEnemy)
+        startActivity(intent)
     }
+
 
     private fun talkToNPC() {
         android.app.AlertDialog.Builder(this)
@@ -729,6 +764,9 @@ class MainActivity : AppCompatActivity() {
                 SensorManager.SENSOR_DELAY_UI // ✅ 讓 UI 更新更即時
             )
         }
+
+        // 更新角色資訊
+        updateCharacterInfo()
 
         // 檢查OSM地圖是否顯示
         // **重新讀取最新的 GPS & OSM 設定**
