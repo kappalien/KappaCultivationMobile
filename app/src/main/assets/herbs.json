@@ -1,0 +1,124 @@
+[
+  {
+    "itemId": "herb",
+    "name": "靈草",
+    "quantity": 1,
+    "description": "恢復少量生命的草藥。",
+    "rarity": "普通",
+    "value": 10,
+    "type": "藥水",
+    "effects": {
+      "hp": 50
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "rare_herb",
+    "name": "稀有靈草",
+    "quantity": 1,
+    "description": "更強大的恢復草藥。",
+    "rarity": "稀有",
+    "value": 30,
+    "type": "藥水",
+    "effects": {
+      "hp": 120
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "mana_herb",
+    "name": "法力草",
+    "quantity": 1,
+    "description": "恢復法力的草藥。",
+    "rarity": "普通",
+    "value": 15,
+    "type": "藥水",
+    "effects": {
+      "mana": 30
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "swift_herb",
+    "name": "迅捷草",
+    "quantity": 1,
+    "description": "短時間內提升速度的草藥。",
+    "rarity": "稀有",
+    "value": 40,
+    "type": "增益",
+    "effects": {
+      "speed": 15
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "strong_herb",
+    "name": "力量草",
+    "quantity": 1,
+    "description": "短時間內提升攻擊力的草藥。",
+    "rarity": "稀有",
+    "value": 40,
+    "type": "增益",
+    "effects": {
+      "attack": 10
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "poison_herb",
+    "name": "毒性草",
+    "quantity": 1,
+    "description": "帶有毒性，但可以製作特殊藥劑。",
+    "rarity": "普通",
+    "value": 20,
+    "type": "材料",
+    "effects": {},
+    "sellable": true
+  },
+  {
+    "itemId": "golden_leaf",
+    "name": "金葉",
+    "quantity": 1,
+    "description": "非常稀有的金色葉子，價值極高。",
+    "rarity": "傳說",
+    "value": 200,
+    "type": "材料",
+    "effects": {},
+    "sellable": true
+  },
+  {
+    "itemId": "calm_flower",
+    "name": "寧心花",
+    "quantity": 1,
+    "description": "能夠讓人冷靜下來的花朵，略微恢復法力。",
+    "rarity": "稀有",
+    "value": 35,
+    "type": "藥水",
+    "effects": {
+      "mana": 50
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "iron_vine",
+    "name": "鐵線藤",
+    "quantity": 1,
+    "description": "堅韌的藤蔓，可以用於製作防禦藥劑。",
+    "rarity": "普通",
+    "value": 25,
+    "type": "材料",
+    "effects": {},
+    "sellable": true
+  },
+  {
+    "itemId": "mystic_root",
+    "name": "神秘根",
+    "quantity": 1,
+    "description": "蘊含神秘力量的根，可以用於製作永久增益藥劑。",
+    "rarity": "史詩",
+    "value": 150,
+    "type": "材料",
+    "effects": {},
+    "sellable": true
+  }
+]

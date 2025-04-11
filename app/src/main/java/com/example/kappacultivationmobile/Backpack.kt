@@ -51,9 +51,9 @@ class Backpack(private val context: Context) {
             val currentItem = items[itemId]!!
             if (currentItem.quantity >= amount) {
                 currentItem.quantity -= amount
-                if (currentItem.quantity == 0) items.remove(itemId) // **數量歸零則刪除**
+                if (currentItem.quantity == 0) items.remove(itemId)
                 saveBackpack()
-                onInventoryUpdated()  // **通知 UI 更新**
+                onInventoryUpdated()
             } else {
                 Log.w("Backpack", "無法移除 ${currentItem.name}，數量不足！")
             }

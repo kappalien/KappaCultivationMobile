@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import android.util.Log
 
 class BackpackAdapter(private val items: MutableList<Item>, private val onItemClick: (Item) -> Unit) :
     RecyclerView.Adapter<BackpackAdapter.ViewHolder>() {

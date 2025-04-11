@@ -8,7 +8,6 @@ class PetActions(private val petStatus: PetStatus) {
 
     fun meditate() { // 修煉恢復能量
         petStatus.energy = (petStatus.energy + 10).coerceAtMost(100)
-        petStatus.mood = (petStatus.mood + 10).coerceAtMost(100)
     }
 
     fun play() { // 娛樂提高心情

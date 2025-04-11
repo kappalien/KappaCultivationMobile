@@ -13,10 +13,12 @@ class RandomEventManager(
         override fun run() {
             val randomChance = (1..100).random()
             val event = when {
-                randomChance < 20 -> "遭遇敵人！⚔" // 20%
-                randomChance < 45 -> "發現靈草 🌿" // 25%
-                randomChance < 65 -> "找到寶藏 💎" // 20%
-                randomChance < 80 -> "遇見修仙 NPC 🧙" // 15%
+//                randomChance < 20 -> "遭遇敵人！⚔"
+//                randomChance < 45 -> "發現靈草 🌿"
+//                randomChance < 65 -> "找到寶藏 💎"
+//                randomChance < 80 -> "遇見修仙 NPC 🧙"
+                randomChance < 30 -> "發現靈草 🌿"
+                randomChance < 60 -> "找到寶藏 💎"
                 else -> null // 20% 無事件
             }
 

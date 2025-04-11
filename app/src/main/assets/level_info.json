@@ -5,7 +5,7 @@
     "mana": 50,
     "attack": 10,
     "defense": 5,
-    "nextLevelSteps": 20000,
+    "nextLevelSteps": 100,
     "gold": 0
   },
   {
@@ -14,7 +14,7 @@
     "mana": 75,
     "attack": 15,
     "defense": 10,
-    "nextLevelSteps": 40000,
+    "nextLevelSteps": 200,
     "gold": 0
   },
   {
@@ -23,7 +23,7 @@
     "mana": 100,
     "attack": 20,
     "defense": 15,
-    "nextLevelSteps": 60000,
+    "nextLevelSteps": 300,
     "gold": 0
   },
   {
@@ -32,7 +32,7 @@
     "mana": 125,
     "attack": 25,
     "defense": 20,
-    "nextLevelSteps": 80000,
+    "nextLevelSteps": 400,
     "gold": 0
   },
   {
@@ -41,7 +41,7 @@
     "mana": 150,
     "attack": 30,
     "defense": 25,
-    "nextLevelSteps": 100000,
+    "nextLevelSteps": 500,
     "gold": 0
   },
   {
@@ -50,7 +50,7 @@
     "mana": 175,
     "attack": 35,
     "defense": 30,
-    "nextLevelSteps": 120000,
+    "nextLevelSteps": 600,
     "gold": 0
   },
   {
@@ -59,7 +59,7 @@
     "mana": 200,
     "attack": 40,
     "defense": 35,
-    "nextLevelSteps": 140000,
+    "nextLevelSteps": 700,
     "gold": 0
   },
   {
@@ -68,7 +68,7 @@
     "mana": 225,
     "attack": 45,
     "defense": 40,
-    "nextLevelSteps": 160000,
+    "nextLevelSteps": 800,
     "gold": 0
   },
   {
@@ -77,7 +77,7 @@
     "mana": 250,
     "attack": 50,
     "defense": 45,
-    "nextLevelSteps": 180000,
+    "nextLevelSteps": 900,
     "gold": 0
   },
   {
@@ -86,7 +86,7 @@
     "mana": 275,
     "attack": 55,
     "defense": 50,
-    "nextLevelSteps": 200000,
+    "nextLevelSteps": 1000,
     "gold": 0
   },
   {
@@ -95,7 +95,7 @@
     "mana": 300,
     "attack": 60,
     "defense": 55,
-    "nextLevelSteps": 220000,
+    "nextLevelSteps": 1100,
     "gold": 0
   },
   {
@@ -104,7 +104,7 @@
     "mana": 325,
     "attack": 65,
     "defense": 60,
-    "nextLevelSteps": 240000,
+    "nextLevelSteps": 1200,
     "gold": 0
   },
   {
@@ -113,7 +113,7 @@
     "mana": 350,
     "attack": 70,
     "defense": 65,
-    "nextLevelSteps": 260000,
+    "nextLevelSteps": 1300,
     "gold": 0
   },
   {
@@ -122,7 +122,7 @@
     "mana": 375,
     "attack": 75,
     "defense": 70,
-    "nextLevelSteps": 280000,
+    "nextLevelSteps": 1400,
     "gold": 0
   },
   {
@@ -131,7 +131,7 @@
     "mana": 400,
     "attack": 80,
     "defense": 75,
-    "nextLevelSteps": 300000,
+    "nextLevelSteps": 1500,
     "gold": 0
   },
   {
@@ -140,7 +140,7 @@
     "mana": 425,
     "attack": 85,
     "defense": 80,
-    "nextLevelSteps": 320000,
+    "nextLevelSteps": 1600,
     "gold": 0
   },
   {
@@ -149,7 +149,7 @@
     "mana": 450,
     "attack": 90,
     "defense": 85,
-    "nextLevelSteps": 340000,
+    "nextLevelSteps": 1700,
     "gold": 0
   },
   {
@@ -158,7 +158,7 @@
     "mana": 475,
     "attack": 95,
     "defense": 90,
-    "nextLevelSteps": 360000,
+    "nextLevelSteps": 1800,
     "gold": 0
   },
   {
@@ -167,7 +167,7 @@
     "mana": 500,
     "attack": 100,
     "defense": 95,
-    "nextLevelSteps": 380000,
+    "nextLevelSteps": 1900,
     "gold": 0
   },
   {
@@ -176,7 +176,7 @@
     "mana": 525,
     "attack": 105,
     "defense": 100,
-    "nextLevelSteps": 400000,
+    "nextLevelSteps": 2000,
     "gold": 0
   },
   {
@@ -185,7 +185,7 @@
     "mana": 550,
     "attack": 110,
     "defense": 105,
-    "nextLevelSteps": 420000,
+    "nextLevelSteps": 2100,
     "gold": 0
   },
   {
@@ -194,7 +194,7 @@
     "mana": 575,
     "attack": 115,
     "defense": 110,
-    "nextLevelSteps": 440000,
+    "nextLevelSteps": 2200,
     "gold": 0
   },
   {
@@ -203,7 +203,7 @@
     "mana": 600,
     "attack": 120,
     "defense": 115,
-    "nextLevelSteps": 460000,
+    "nextLevelSteps": 2300,
     "gold": 0
   },
   {
@@ -212,7 +212,7 @@
     "mana": 625,
     "attack": 125,
     "defense": 120,
-    "nextLevelSteps": 480000,
+    "nextLevelSteps": 2400,
     "gold": 0
   },
   {
@@ -221,7 +221,7 @@
     "mana": 650,
     "attack": 130,
     "defense": 125,
-    "nextLevelSteps": 500000,
+    "nextLevelSteps": 2500,
     "gold": 0
   },
   {
@@ -230,7 +230,7 @@
     "mana": 675,
     "attack": 135,
     "defense": 130,
-    "nextLevelSteps": 520000,
+    "nextLevelSteps": 2600,
     "gold": 0
   },
   {
@@ -239,7 +239,7 @@
     "mana": 700,
     "attack": 140,
     "defense": 135,
-    "nextLevelSteps": 540000,
+    "nextLevelSteps": 2700,
     "gold": 0
   },
   {
@@ -248,7 +248,7 @@
     "mana": 725,
     "attack": 145,
     "defense": 140,
-    "nextLevelSteps": 560000,
+    "nextLevelSteps": 2800,
     "gold": 0
   },
   {
@@ -257,7 +257,7 @@
     "mana": 750,
     "attack": 150,
     "defense": 145,
-    "nextLevelSteps": 580000,
+    "nextLevelSteps": 2900,
     "gold": 0
   },
   {
@@ -266,7 +266,7 @@
     "mana": 775,
     "attack": 155,
     "defense": 150,
-    "nextLevelSteps": 600000,
+    "nextLevelSteps": 3000,
     "gold": 0
   },
   {
@@ -275,7 +275,7 @@
     "mana": 800,
     "attack": 160,
     "defense": 155,
-    "nextLevelSteps": 620000,
+    "nextLevelSteps": 3100,
     "gold": 0
   },
   {
@@ -284,7 +284,7 @@
     "mana": 825,
     "attack": 165,
     "defense": 160,
-    "nextLevelSteps": 640000,
+    "nextLevelSteps": 3200,
     "gold": 0
   },
   {
@@ -293,7 +293,7 @@
     "mana": 850,
     "attack": 170,
     "defense": 165,
-    "nextLevelSteps": 660000,
+    "nextLevelSteps": 3300,
     "gold": 0
   },
   {
@@ -302,7 +302,7 @@
     "mana": 875,
     "attack": 175,
     "defense": 170,
-    "nextLevelSteps": 680000,
+    "nextLevelSteps": 3400,
     "gold": 0
   },
   {
@@ -311,7 +311,7 @@
     "mana": 900,
     "attack": 180,
     "defense": 175,
-    "nextLevelSteps": 700000,
+    "nextLevelSteps": 3500,
     "gold": 0
   },
   {
@@ -320,7 +320,7 @@
     "mana": 925,
     "attack": 185,
     "defense": 180,
-    "nextLevelSteps": 720000,
+    "nextLevelSteps": 3600,
     "gold": 0
   },
   {
@@ -329,7 +329,7 @@
     "mana": 950,
     "attack": 190,
     "defense": 185,
-    "nextLevelSteps": 740000,
+    "nextLevelSteps": 3700,
     "gold": 0
   },
   {
@@ -338,7 +338,7 @@
     "mana": 975,
     "attack": 195,
     "defense": 190,
-    "nextLevelSteps": 760000,
+    "nextLevelSteps": 3800,
     "gold": 0
   },
   {
@@ -347,7 +347,7 @@
     "mana": 1000,
     "attack": 200,
     "defense": 195,
-    "nextLevelSteps": 780000,
+    "nextLevelSteps": 3900,
     "gold": 0
   },
   {
@@ -356,7 +356,7 @@
     "mana": 1025,
     "attack": 205,
     "defense": 200,
-    "nextLevelSteps": 800000,
+    "nextLevelSteps": 4000,
     "gold": 0
   },
   {
@@ -365,7 +365,7 @@
     "mana": 1050,
     "attack": 210,
     "defense": 205,
-    "nextLevelSteps": 820000,
+    "nextLevelSteps": 4100,
     "gold": 0
   },
   {
@@ -374,7 +374,7 @@
     "mana": 1075,
     "attack": 215,
     "defense": 210,
-    "nextLevelSteps": 840000,
+    "nextLevelSteps": 4200,
     "gold": 0
   },
   {
@@ -383,7 +383,7 @@
     "mana": 1100,
     "attack": 220,
     "defense": 215,
-    "nextLevelSteps": 860000,
+    "nextLevelSteps": 4300,
     "gold": 0
   },
   {
@@ -392,7 +392,7 @@
     "mana": 1125,
     "attack": 225,
     "defense": 220,
-    "nextLevelSteps": 880000,
+    "nextLevelSteps": 4400,
     "gold": 0
   },
   {
@@ -401,7 +401,7 @@
     "mana": 1150,
     "attack": 230,
     "defense": 225,
-    "nextLevelSteps": 900000,
+    "nextLevelSteps": 4500,
     "gold": 0
   },
   {
@@ -410,7 +410,7 @@
     "mana": 1175,
     "attack": 235,
     "defense": 230,
-    "nextLevelSteps": 920000,
+    "nextLevelSteps": 4600,
     "gold": 0
   },
   {
@@ -419,7 +419,7 @@
     "mana": 1200,
     "attack": 240,
     "defense": 235,
-    "nextLevelSteps": 940000,
+    "nextLevelSteps": 4700,
     "gold": 0
   },
   {
@@ -428,7 +428,7 @@
     "mana": 1225,
     "attack": 245,
     "defense": 240,
-    "nextLevelSteps": 960000,
+    "nextLevelSteps": 4800,
     "gold": 0
   },
   {
@@ -437,7 +437,7 @@
     "mana": 1250,
     "attack": 250,
     "defense": 245,
-    "nextLevelSteps": 980000,
+    "nextLevelSteps": 4900,
     "gold": 0
   },
   {
@@ -446,7 +446,1357 @@
     "mana": 1275,
     "attack": 255,
     "defense": 250,
-    "nextLevelSteps": 1000000,
+    "nextLevelSteps": 5000,
+    "gold": 0
+  },
+  {
+    "level": 51,
+    "health": 2600,
+    "mana": 1300,
+    "attack": 260,
+    "defense": 255,
+    "nextLevelSteps": 5100,
+    "gold": 0
+  },
+  {
+    "level": 52,
+    "health": 2650,
+    "mana": 1325,
+    "attack": 265,
+    "defense": 260,
+    "nextLevelSteps": 5200,
+    "gold": 0
+  },
+  {
+    "level": 53,
+    "health": 2700,
+    "mana": 1350,
+    "attack": 270,
+    "defense": 265,
+    "nextLevelSteps": 5300,
+    "gold": 0
+  },
+  {
+    "level": 54,
+    "health": 2750,
+    "mana": 1375,
+    "attack": 275,
+    "defense": 270,
+    "nextLevelSteps": 5400,
+    "gold": 0
+  },
+  {
+    "level": 55,
+    "health": 2800,
+    "mana": 1400,
+    "attack": 280,
+    "defense": 275,
+    "nextLevelSteps": 5500,
+    "gold": 0
+  },
+  {
+    "level": 56,
+    "health": 2850,
+    "mana": 1425,
+    "attack": 285,
+    "defense": 280,
+    "nextLevelSteps": 5600,
+    "gold": 0
+  },
+  {
+    "level": 57,
+    "health": 2900,
+    "mana": 1450,
+    "attack": 290,
+    "defense": 285,
+    "nextLevelSteps": 5700,
+    "gold": 0
+  },
+  {
+    "level": 58,
+    "health": 2950,
+    "mana": 1475,
+    "attack": 295,
+    "defense": 290,
+    "nextLevelSteps": 5800,
+    "gold": 0
+  },
+  {
+    "level": 59,
+    "health": 3000,
+    "mana": 1500,
+    "attack": 300,
+    "defense": 295,
+    "nextLevelSteps": 5900,
+    "gold": 0
+  },
+  {
+    "level": 60,
+    "health": 3050,
+    "mana": 1525,
+    "attack": 305,
+    "defense": 300,
+    "nextLevelSteps": 6000,
+    "gold": 0
+  },
+  {
+    "level": 61,
+    "health": 3100,
+    "mana": 1550,
+    "attack": 310,
+    "defense": 305,
+    "nextLevelSteps": 6100,
+    "gold": 0
+  },
+  {
+    "level": 62,
+    "health": 3150,
+    "mana": 1575,
+    "attack": 315,
+    "defense": 310,
+    "nextLevelSteps": 6200,
+    "gold": 0
+  },
+  {
+    "level": 63,
+    "health": 3200,
+    "mana": 1600,
+    "attack": 320,
+    "defense": 315,
+    "nextLevelSteps": 6300,
+    "gold": 0
+  },
+  {
+    "level": 64,
+    "health": 3250,
+    "mana": 1625,
+    "attack": 325,
+    "defense": 320,
+    "nextLevelSteps": 6400,
+    "gold": 0
+  },
+  {
+    "level": 65,
+    "health": 3300,
+    "mana": 1650,
+    "attack": 330,
+    "defense": 325,
+    "nextLevelSteps": 6500,
+    "gold": 0
+  },
+  {
+    "level": 66,
+    "health": 3350,
+    "mana": 1675,
+    "attack": 335,
+    "defense": 330,
+    "nextLevelSteps": 6600,
+    "gold": 0
+  },
+  {
+    "level": 67,
+    "health": 3400,
+    "mana": 1700,
+    "attack": 340,
+    "defense": 335,
+    "nextLevelSteps": 6700,
+    "gold": 0
+  },
+  {
+    "level": 68,
+    "health": 3450,
+    "mana": 1725,
+    "attack": 345,
+    "defense": 340,
+    "nextLevelSteps": 6800,
+    "gold": 0
+  },
+  {
+    "level": 69,
+    "health": 3500,
+    "mana": 1750,
+    "attack": 350,
+    "defense": 345,
+    "nextLevelSteps": 6900,
+    "gold": 0
+  },
+  {
+    "level": 70,
+    "health": 3550,
+    "mana": 1775,
+    "attack": 355,
+    "defense": 350,
+    "nextLevelSteps": 7000,
+    "gold": 0
+  },
+  {
+    "level": 71,
+    "health": 3600,
+    "mana": 1800,
+    "attack": 360,
+    "defense": 355,
+    "nextLevelSteps": 7100,
+    "gold": 0
+  },
+  {
+    "level": 72,
+    "health": 3650,
+    "mana": 1825,
+    "attack": 365,
+    "defense": 360,
+    "nextLevelSteps": 7200,
+    "gold": 0
+  },
+  {
+    "level": 73,
+    "health": 3700,
+    "mana": 1850,
+    "attack": 370,
+    "defense": 365,
+    "nextLevelSteps": 7300,
+    "gold": 0
+  },
+  {
+    "level": 74,
+    "health": 3750,
+    "mana": 1875,
+    "attack": 375,
+    "defense": 370,
+    "nextLevelSteps": 7400,
+    "gold": 0
+  },
+  {
+    "level": 75,
+    "health": 3800,
+    "mana": 1900,
+    "attack": 380,
+    "defense": 375,
+    "nextLevelSteps": 7500,
+    "gold": 0
+  },
+  {
+    "level": 76,
+    "health": 3850,
+    "mana": 1925,
+    "attack": 385,
+    "defense": 380,
+    "nextLevelSteps": 7600,
+    "gold": 0
+  },
+  {
+    "level": 77,
+    "health": 3900,
+    "mana": 1950,
+    "attack": 390,
+    "defense": 385,
+    "nextLevelSteps": 7700,
+    "gold": 0
+  },
+  {
+    "level": 78,
+    "health": 3950,
+    "mana": 1975,
+    "attack": 395,
+    "defense": 390,
+    "nextLevelSteps": 7800,
+    "gold": 0
+  },
+  {
+    "level": 79,
+    "health": 4000,
+    "mana": 2000,
+    "attack": 400,
+    "defense": 395,
+    "nextLevelSteps": 7900,
+    "gold": 0
+  },
+  {
+    "level": 80,
+    "health": 4050,
+    "mana": 2025,
+    "attack": 405,
+    "defense": 400,
+    "nextLevelSteps": 8000,
+    "gold": 0
+  },
+  {
+    "level": 81,
+    "health": 4100,
+    "mana": 2050,
+    "attack": 410,
+    "defense": 405,
+    "nextLevelSteps": 8100,
+    "gold": 0
+  },
+  {
+    "level": 82,
+    "health": 4150,
+    "mana": 2075,
+    "attack": 415,
+    "defense": 410,
+    "nextLevelSteps": 8200,
+    "gold": 0
+  },
+  {
+    "level": 83,
+    "health": 4200,
+    "mana": 2100,
+    "attack": 420,
+    "defense": 415,
+    "nextLevelSteps": 8300,
+    "gold": 0
+  },
+  {
+    "level": 84,
+    "health": 4250,
+    "mana": 2125,
+    "attack": 425,
+    "defense": 420,
+    "nextLevelSteps": 8400,
+    "gold": 0
+  },
+  {
+    "level": 85,
+    "health": 4300,
+    "mana": 2150,
+    "attack": 430,
+    "defense": 425,
+    "nextLevelSteps": 8500,
+    "gold": 0
+  },
+  {
+    "level": 86,
+    "health": 4350,
+    "mana": 2175,
+    "attack": 435,
+    "defense": 430,
+    "nextLevelSteps": 8600,
+    "gold": 0
+  },
+  {
+    "level": 87,
+    "health": 4400,
+    "mana": 2200,
+    "attack": 440,
+    "defense": 435,
+    "nextLevelSteps": 8700,
+    "gold": 0
+  },
+  {
+    "level": 88,
+    "health": 4450,
+    "mana": 2225,
+    "attack": 445,
+    "defense": 440,
+    "nextLevelSteps": 8800,
+    "gold": 0
+  },
+  {
+    "level": 89,
+    "health": 4500,
+    "mana": 2250,
+    "attack": 450,
+    "defense": 445,
+    "nextLevelSteps": 8900,
+    "gold": 0
+  },
+  {
+    "level": 90,
+    "health": 4550,
+    "mana": 2275,
+    "attack": 455,
+    "defense": 450,
+    "nextLevelSteps": 9000,
+    "gold": 0
+  },
+  {
+    "level": 91,
+    "health": 4600,
+    "mana": 2300,
+    "attack": 460,
+    "defense": 455,
+    "nextLevelSteps": 9100,
+    "gold": 0
+  },
+  {
+    "level": 92,
+    "health": 4650,
+    "mana": 2325,
+    "attack": 465,
+    "defense": 460,
+    "nextLevelSteps": 9200,
+    "gold": 0
+  },
+  {
+    "level": 93,
+    "health": 4700,
+    "mana": 2350,
+    "attack": 470,
+    "defense": 465,
+    "nextLevelSteps": 9300,
+    "gold": 0
+  },
+  {
+    "level": 94,
+    "health": 4750,
+    "mana": 2375,
+    "attack": 475,
+    "defense": 470,
+    "nextLevelSteps": 9400,
+    "gold": 0
+  },
+  {
+    "level": 95,
+    "health": 4800,
+    "mana": 2400,
+    "attack": 480,
+    "defense": 475,
+    "nextLevelSteps": 9500,
+    "gold": 0
+  },
+  {
+    "level": 96,
+    "health": 4850,
+    "mana": 2425,
+    "attack": 485,
+    "defense": 480,
+    "nextLevelSteps": 9600,
+    "gold": 0
+  },
+  {
+    "level": 97,
+    "health": 4900,
+    "mana": 2450,
+    "attack": 490,
+    "defense": 485,
+    "nextLevelSteps": 9700,
+    "gold": 0
+  },
+  {
+    "level": 98,
+    "health": 4950,
+    "mana": 2475,
+    "attack": 495,
+    "defense": 490,
+    "nextLevelSteps": 9800,
+    "gold": 0
+  },
+  {
+    "level": 99,
+    "health": 5000,
+    "mana": 2500,
+    "attack": 500,
+    "defense": 495,
+    "nextLevelSteps": 9900,
+    "gold": 0
+  },
+  {
+    "level": 100,
+    "health": 5050,
+    "mana": 2525,
+    "attack": 505,
+    "defense": 500,
+    "nextLevelSteps": 10000,
+    "gold": 0
+  },
+  {
+    "level": 101,
+    "health": 5100,
+    "mana": 2550,
+    "attack": 510,
+    "defense": 505,
+    "nextLevelSteps": 10100,
+    "gold": 0
+  },
+  {
+    "level": 102,
+    "health": 5150,
+    "mana": 2575,
+    "attack": 515,
+    "defense": 510,
+    "nextLevelSteps": 10200,
+    "gold": 0
+  },
+  {
+    "level": 103,
+    "health": 5200,
+    "mana": 2600,
+    "attack": 520,
+    "defense": 515,
+    "nextLevelSteps": 10300,
+    "gold": 0
+  },
+  {
+    "level": 104,
+    "health": 5250,
+    "mana": 2625,
+    "attack": 525,
+    "defense": 520,
+    "nextLevelSteps": 10400,
+    "gold": 0
+  },
+  {
+    "level": 105,
+    "health": 5300,
+    "mana": 2650,
+    "attack": 530,
+    "defense": 525,
+    "nextLevelSteps": 10500,
+    "gold": 0
+  },
+  {
+    "level": 106,
+    "health": 5350,
+    "mana": 2675,
+    "attack": 535,
+    "defense": 530,
+    "nextLevelSteps": 10600,
+    "gold": 0
+  },
+  {
+    "level": 107,
+    "health": 5400,
+    "mana": 2700,
+    "attack": 540,
+    "defense": 535,
+    "nextLevelSteps": 10700,
+    "gold": 0
+  },
+  {
+    "level": 108,
+    "health": 5450,
+    "mana": 2725,
+    "attack": 545,
+    "defense": 540,
+    "nextLevelSteps": 10800,
+    "gold": 0
+  },
+  {
+    "level": 109,
+    "health": 5500,
+    "mana": 2750,
+    "attack": 550,
+    "defense": 545,
+    "nextLevelSteps": 10900,
+    "gold": 0
+  },
+  {
+    "level": 110,
+    "health": 5550,
+    "mana": 2775,
+    "attack": 555,
+    "defense": 550,
+    "nextLevelSteps": 11000,
+    "gold": 0
+  },
+  {
+    "level": 111,
+    "health": 5600,
+    "mana": 2800,
+    "attack": 560,
+    "defense": 555,
+    "nextLevelSteps": 11100,
+    "gold": 0
+  },
+  {
+    "level": 112,
+    "health": 5650,
+    "mana": 2825,
+    "attack": 565,
+    "defense": 560,
+    "nextLevelSteps": 11200,
+    "gold": 0
+  },
+  {
+    "level": 113,
+    "health": 5700,
+    "mana": 2850,
+    "attack": 570,
+    "defense": 565,
+    "nextLevelSteps": 11300,
+    "gold": 0
+  },
+  {
+    "level": 114,
+    "health": 5750,
+    "mana": 2875,
+    "attack": 575,
+    "defense": 570,
+    "nextLevelSteps": 11400,
+    "gold": 0
+  },
+  {
+    "level": 115,
+    "health": 5800,
+    "mana": 2900,
+    "attack": 580,
+    "defense": 575,
+    "nextLevelSteps": 11500,
+    "gold": 0
+  },
+  {
+    "level": 116,
+    "health": 5850,
+    "mana": 2925,
+    "attack": 585,
+    "defense": 580,
+    "nextLevelSteps": 11600,
+    "gold": 0
+  },
+  {
+    "level": 117,
+    "health": 5900,
+    "mana": 2950,
+    "attack": 590,
+    "defense": 585,
+    "nextLevelSteps": 11700,
+    "gold": 0
+  },
+  {
+    "level": 118,
+    "health": 5950,
+    "mana": 2975,
+    "attack": 595,
+    "defense": 590,
+    "nextLevelSteps": 11800,
+    "gold": 0
+  },
+  {
+    "level": 119,
+    "health": 6000,
+    "mana": 3000,
+    "attack": 600,
+    "defense": 595,
+    "nextLevelSteps": 11900,
+    "gold": 0
+  },
+  {
+    "level": 120,
+    "health": 6050,
+    "mana": 3025,
+    "attack": 605,
+    "defense": 600,
+    "nextLevelSteps": 12000,
+    "gold": 0
+  },
+  {
+    "level": 121,
+    "health": 6100,
+    "mana": 3050,
+    "attack": 610,
+    "defense": 605,
+    "nextLevelSteps": 12100,
+    "gold": 0
+  },
+  {
+    "level": 122,
+    "health": 6150,
+    "mana": 3075,
+    "attack": 615,
+    "defense": 610,
+    "nextLevelSteps": 12200,
+    "gold": 0
+  },
+  {
+    "level": 123,
+    "health": 6200,
+    "mana": 3100,
+    "attack": 620,
+    "defense": 615,
+    "nextLevelSteps": 12300,
+    "gold": 0
+  },
+  {
+    "level": 124,
+    "health": 6250,
+    "mana": 3125,
+    "attack": 625,
+    "defense": 620,
+    "nextLevelSteps": 12400,
+    "gold": 0
+  },
+  {
+    "level": 125,
+    "health": 6300,
+    "mana": 3150,
+    "attack": 630,
+    "defense": 625,
+    "nextLevelSteps": 12500,
+    "gold": 0
+  },
+  {
+    "level": 126,
+    "health": 6350,
+    "mana": 3175,
+    "attack": 635,
+    "defense": 630,
+    "nextLevelSteps": 12600,
+    "gold": 0
+  },
+  {
+    "level": 127,
+    "health": 6400,
+    "mana": 3200,
+    "attack": 640,
+    "defense": 635,
+    "nextLevelSteps": 12700,
+    "gold": 0
+  },
+  {
+    "level": 128,
+    "health": 6450,
+    "mana": 3225,
+    "attack": 645,
+    "defense": 640,
+    "nextLevelSteps": 12800,
+    "gold": 0
+  },
+  {
+    "level": 129,
+    "health": 6500,
+    "mana": 3250,
+    "attack": 650,
+    "defense": 645,
+    "nextLevelSteps": 12900,
+    "gold": 0
+  },
+  {
+    "level": 130,
+    "health": 6550,
+    "mana": 3275,
+    "attack": 655,
+    "defense": 650,
+    "nextLevelSteps": 13000,
+    "gold": 0
+  },
+  {
+    "level": 131,
+    "health": 6600,
+    "mana": 3300,
+    "attack": 660,
+    "defense": 655,
+    "nextLevelSteps": 13100,
+    "gold": 0
+  },
+  {
+    "level": 132,
+    "health": 6650,
+    "mana": 3325,
+    "attack": 665,
+    "defense": 660,
+    "nextLevelSteps": 13200,
+    "gold": 0
+  },
+  {
+    "level": 133,
+    "health": 6700,
+    "mana": 3350,
+    "attack": 670,
+    "defense": 665,
+    "nextLevelSteps": 13300,
+    "gold": 0
+  },
+  {
+    "level": 134,
+    "health": 6750,
+    "mana": 3375,
+    "attack": 675,
+    "defense": 670,
+    "nextLevelSteps": 13400,
+    "gold": 0
+  },
+  {
+    "level": 135,
+    "health": 6800,
+    "mana": 3400,
+    "attack": 680,
+    "defense": 675,
+    "nextLevelSteps": 13500,
+    "gold": 0
+  },
+  {
+    "level": 136,
+    "health": 6850,
+    "mana": 3425,
+    "attack": 685,
+    "defense": 680,
+    "nextLevelSteps": 13600,
+    "gold": 0
+  },
+  {
+    "level": 137,
+    "health": 6900,
+    "mana": 3450,
+    "attack": 690,
+    "defense": 685,
+    "nextLevelSteps": 13700,
+    "gold": 0
+  },
+  {
+    "level": 138,
+    "health": 6950,
+    "mana": 3475,
+    "attack": 695,
+    "defense": 690,
+    "nextLevelSteps": 13800,
+    "gold": 0
+  },
+  {
+    "level": 139,
+    "health": 7000,
+    "mana": 3500,
+    "attack": 700,
+    "defense": 695,
+    "nextLevelSteps": 13900,
+    "gold": 0
+  },
+  {
+    "level": 140,
+    "health": 7050,
+    "mana": 3525,
+    "attack": 705,
+    "defense": 700,
+    "nextLevelSteps": 14000,
+    "gold": 0
+  },
+  {
+    "level": 141,
+    "health": 7100,
+    "mana": 3550,
+    "attack": 710,
+    "defense": 705,
+    "nextLevelSteps": 14100,
+    "gold": 0
+  },
+  {
+    "level": 142,
+    "health": 7150,
+    "mana": 3575,
+    "attack": 715,
+    "defense": 710,
+    "nextLevelSteps": 14200,
+    "gold": 0
+  },
+  {
+    "level": 143,
+    "health": 7200,
+    "mana": 3600,
+    "attack": 720,
+    "defense": 715,
+    "nextLevelSteps": 14300,
+    "gold": 0
+  },
+  {
+    "level": 144,
+    "health": 7250,
+    "mana": 3625,
+    "attack": 725,
+    "defense": 720,
+    "nextLevelSteps": 14400,
+    "gold": 0
+  },
+  {
+    "level": 145,
+    "health": 7300,
+    "mana": 3650,
+    "attack": 730,
+    "defense": 725,
+    "nextLevelSteps": 14500,
+    "gold": 0
+  },
+  {
+    "level": 146,
+    "health": 7350,
+    "mana": 3675,
+    "attack": 735,
+    "defense": 730,
+    "nextLevelSteps": 14600,
+    "gold": 0
+  },
+  {
+    "level": 147,
+    "health": 7400,
+    "mana": 3700,
+    "attack": 740,
+    "defense": 735,
+    "nextLevelSteps": 14700,
+    "gold": 0
+  },
+  {
+    "level": 148,
+    "health": 7450,
+    "mana": 3725,
+    "attack": 745,
+    "defense": 740,
+    "nextLevelSteps": 14800,
+    "gold": 0
+  },
+  {
+    "level": 149,
+    "health": 7500,
+    "mana": 3750,
+    "attack": 750,
+    "defense": 745,
+    "nextLevelSteps": 14900,
+    "gold": 0
+  },
+  {
+    "level": 150,
+    "health": 7550,
+    "mana": 3775,
+    "attack": 755,
+    "defense": 750,
+    "nextLevelSteps": 15000,
+    "gold": 0
+  },
+  {
+    "level": 151,
+    "health": 7600,
+    "mana": 3800,
+    "attack": 760,
+    "defense": 755,
+    "nextLevelSteps": 15100,
+    "gold": 0
+  },
+  {
+    "level": 152,
+    "health": 7650,
+    "mana": 3825,
+    "attack": 765,
+    "defense": 760,
+    "nextLevelSteps": 15200,
+    "gold": 0
+  },
+  {
+    "level": 153,
+    "health": 7700,
+    "mana": 3850,
+    "attack": 770,
+    "defense": 765,
+    "nextLevelSteps": 15300,
+    "gold": 0
+  },
+  {
+    "level": 154,
+    "health": 7750,
+    "mana": 3875,
+    "attack": 775,
+    "defense": 770,
+    "nextLevelSteps": 15400,
+    "gold": 0
+  },
+  {
+    "level": 155,
+    "health": 7800,
+    "mana": 3900,
+    "attack": 780,
+    "defense": 775,
+    "nextLevelSteps": 15500,
+    "gold": 0
+  },
+  {
+    "level": 156,
+    "health": 7850,
+    "mana": 3925,
+    "attack": 785,
+    "defense": 780,
+    "nextLevelSteps": 15600,
+    "gold": 0
+  },
+  {
+    "level": 157,
+    "health": 7900,
+    "mana": 3950,
+    "attack": 790,
+    "defense": 785,
+    "nextLevelSteps": 15700,
+    "gold": 0
+  },
+  {
+    "level": 158,
+    "health": 7950,
+    "mana": 3975,
+    "attack": 795,
+    "defense": 790,
+    "nextLevelSteps": 15800,
+    "gold": 0
+  },
+  {
+    "level": 159,
+    "health": 8000,
+    "mana": 4000,
+    "attack": 800,
+    "defense": 795,
+    "nextLevelSteps": 15900,
+    "gold": 0
+  },
+  {
+    "level": 160,
+    "health": 8050,
+    "mana": 4025,
+    "attack": 805,
+    "defense": 800,
+    "nextLevelSteps": 16000,
+    "gold": 0
+  },
+  {
+    "level": 161,
+    "health": 8100,
+    "mana": 4050,
+    "attack": 810,
+    "defense": 805,
+    "nextLevelSteps": 16100,
+    "gold": 0
+  },
+  {
+    "level": 162,
+    "health": 8150,
+    "mana": 4075,
+    "attack": 815,
+    "defense": 810,
+    "nextLevelSteps": 16200,
+    "gold": 0
+  },
+  {
+    "level": 163,
+    "health": 8200,
+    "mana": 4100,
+    "attack": 820,
+    "defense": 815,
+    "nextLevelSteps": 16300,
+    "gold": 0
+  },
+  {
+    "level": 164,
+    "health": 8250,
+    "mana": 4125,
+    "attack": 825,
+    "defense": 820,
+    "nextLevelSteps": 16400,
+    "gold": 0
+  },
+  {
+    "level": 165,
+    "health": 8300,
+    "mana": 4150,
+    "attack": 830,
+    "defense": 825,
+    "nextLevelSteps": 16500,
+    "gold": 0
+  },
+  {
+    "level": 166,
+    "health": 8350,
+    "mana": 4175,
+    "attack": 835,
+    "defense": 830,
+    "nextLevelSteps": 16600,
+    "gold": 0
+  },
+  {
+    "level": 167,
+    "health": 8400,
+    "mana": 4200,
+    "attack": 840,
+    "defense": 835,
+    "nextLevelSteps": 16700,
+    "gold": 0
+  },
+  {
+    "level": 168,
+    "health": 8450,
+    "mana": 4225,
+    "attack": 845,
+    "defense": 840,
+    "nextLevelSteps": 16800,
+    "gold": 0
+  },
+  {
+    "level": 169,
+    "health": 8500,
+    "mana": 4250,
+    "attack": 850,
+    "defense": 845,
+    "nextLevelSteps": 16900,
+    "gold": 0
+  },
+  {
+    "level": 170,
+    "health": 8550,
+    "mana": 4275,
+    "attack": 855,
+    "defense": 850,
+    "nextLevelSteps": 17000,
+    "gold": 0
+  },
+  {
+    "level": 171,
+    "health": 8600,
+    "mana": 4300,
+    "attack": 860,
+    "defense": 855,
+    "nextLevelSteps": 17100,
+    "gold": 0
+  },
+  {
+    "level": 172,
+    "health": 8650,
+    "mana": 4325,
+    "attack": 865,
+    "defense": 860,
+    "nextLevelSteps": 17200,
+    "gold": 0
+  },
+  {
+    "level": 173,
+    "health": 8700,
+    "mana": 4350,
+    "attack": 870,
+    "defense": 865,
+    "nextLevelSteps": 17300,
+    "gold": 0
+  },
+  {
+    "level": 174,
+    "health": 8750,
+    "mana": 4375,
+    "attack": 875,
+    "defense": 870,
+    "nextLevelSteps": 17400,
+    "gold": 0
+  },
+  {
+    "level": 175,
+    "health": 8800,
+    "mana": 4400,
+    "attack": 880,
+    "defense": 875,
+    "nextLevelSteps": 17500,
+    "gold": 0
+  },
+  {
+    "level": 176,
+    "health": 8850,
+    "mana": 4425,
+    "attack": 885,
+    "defense": 880,
+    "nextLevelSteps": 17600,
+    "gold": 0
+  },
+  {
+    "level": 177,
+    "health": 8900,
+    "mana": 4450,
+    "attack": 890,
+    "defense": 885,
+    "nextLevelSteps": 17700,
+    "gold": 0
+  },
+  {
+    "level": 178,
+    "health": 8950,
+    "mana": 4475,
+    "attack": 895,
+    "defense": 890,
+    "nextLevelSteps": 17800,
+    "gold": 0
+  },
+  {
+    "level": 179,
+    "health": 9000,
+    "mana": 4500,
+    "attack": 900,
+    "defense": 895,
+    "nextLevelSteps": 17900,
+    "gold": 0
+  },
+  {
+    "level": 180,
+    "health": 9050,
+    "mana": 4525,
+    "attack": 905,
+    "defense": 900,
+    "nextLevelSteps": 18000,
+    "gold": 0
+  },
+  {
+    "level": 181,
+    "health": 9100,
+    "mana": 4550,
+    "attack": 910,
+    "defense": 905,
+    "nextLevelSteps": 18100,
+    "gold": 0
+  },
+  {
+    "level": 182,
+    "health": 9150,
+    "mana": 4575,
+    "attack": 915,
+    "defense": 910,
+    "nextLevelSteps": 18200,
+    "gold": 0
+  },
+  {
+    "level": 183,
+    "health": 9200,
+    "mana": 4600,
+    "attack": 920,
+    "defense": 915,
+    "nextLevelSteps": 18300,
+    "gold": 0
+  },
+  {
+    "level": 184,
+    "health": 9250,
+    "mana": 4625,
+    "attack": 925,
+    "defense": 920,
+    "nextLevelSteps": 18400,
+    "gold": 0
+  },
+  {
+    "level": 185,
+    "health": 9300,
+    "mana": 4650,
+    "attack": 930,
+    "defense": 925,
+    "nextLevelSteps": 18500,
+    "gold": 0
+  },
+  {
+    "level": 186,
+    "health": 9350,
+    "mana": 4675,
+    "attack": 935,
+    "defense": 930,
+    "nextLevelSteps": 18600,
+    "gold": 0
+  },
+  {
+    "level": 187,
+    "health": 9400,
+    "mana": 4700,
+    "attack": 940,
+    "defense": 935,
+    "nextLevelSteps": 18700,
+    "gold": 0
+  },
+  {
+    "level": 188,
+    "health": 9450,
+    "mana": 4725,
+    "attack": 945,
+    "defense": 940,
+    "nextLevelSteps": 18800,
+    "gold": 0
+  },
+  {
+    "level": 189,
+    "health": 9500,
+    "mana": 4750,
+    "attack": 950,
+    "defense": 945,
+    "nextLevelSteps": 18900,
+    "gold": 0
+  },
+  {
+    "level": 190,
+    "health": 9550,
+    "mana": 4775,
+    "attack": 955,
+    "defense": 950,
+    "nextLevelSteps": 19000,
+    "gold": 0
+  },
+  {
+    "level": 191,
+    "health": 9600,
+    "mana": 4800,
+    "attack": 960,
+    "defense": 955,
+    "nextLevelSteps": 19100,
+    "gold": 0
+  },
+  {
+    "level": 192,
+    "health": 9650,
+    "mana": 4825,
+    "attack": 965,
+    "defense": 960,
+    "nextLevelSteps": 19200,
+    "gold": 0
+  },
+  {
+    "level": 193,
+    "health": 9700,
+    "mana": 4850,
+    "attack": 970,
+    "defense": 965,
+    "nextLevelSteps": 19300,
+    "gold": 0
+  },
+  {
+    "level": 194,
+    "health": 9750,
+    "mana": 4875,
+    "attack": 975,
+    "defense": 970,
+    "nextLevelSteps": 19400,
+    "gold": 0
+  },
+  {
+    "level": 195,
+    "health": 9800,
+    "mana": 4900,
+    "attack": 980,
+    "defense": 975,
+    "nextLevelSteps": 19500,
+    "gold": 0
+  },
+  {
+    "level": 196,
+    "health": 9850,
+    "mana": 4925,
+    "attack": 985,
+    "defense": 980,
+    "nextLevelSteps": 19600,
+    "gold": 0
+  },
+  {
+    "level": 197,
+    "health": 9900,
+    "mana": 4950,
+    "attack": 990,
+    "defense": 985,
+    "nextLevelSteps": 19700,
+    "gold": 0
+  },
+  {
+    "level": 198,
+    "health": 9950,
+    "mana": 4975,
+    "attack": 995,
+    "defense": 990,
+    "nextLevelSteps": 19800,
+    "gold": 0
+  },
+  {
+    "level": 199,
+    "health": 10000,
+    "mana": 5000,
+    "attack": 1000,
+    "defense": 995,
+    "nextLevelSteps": 19900,
+    "gold": 0
+  },
+  {
+    "level": 200,
+    "health": 10050,
+    "mana": 5025,
+    "attack": 1005,
+    "defense": 1000,
+    "nextLevelSteps": 20000,
     "gold": 0
   }
 ]

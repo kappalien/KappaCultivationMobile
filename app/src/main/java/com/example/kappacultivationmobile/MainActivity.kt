@@ -30,6 +30,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.GridLayoutManager
 import android.widget.LinearLayout
 import android.util.Log
+import android.view.MotionEvent
+import java.lang.reflect.Type
+import android.os.Looper
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.app.AlertDialog
+import android.text.InputType
+import android.widget.EditText
+import android.view.ViewGroup.LayoutParams
+import java.util.Calendar
+
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
@@ -44,19 +54,64 @@ class MainActivity : AppCompatActivity() {
     private var stepCounterSensor: Sensor? = null
     private lateinit var stepCounterHelper: StepCounterHelper
 
+    // 依時間改變背景圖片
+    data class TimeBackground(val startTime: Int, val endTime: Int, val drawableId: Int)
+    private val timeBackgrounds = listOf(
+        TimeBackground(0, 6, R.drawable.background_night),
+        TimeBackground(6, 9, R.drawable.background_dawn),
+        TimeBackground(9, 17, R.drawable.background_day),
+        TimeBackground(17, 20, R.drawable.background_dusk),
+        TimeBackground(20, 24, R.drawable.background_night)
+    )
+
+    private lateinit var staticBackground: ImageView    // 背景
     private lateinit var tvStatus: TextView // 等級資訊
     private lateinit var petStatusTextView: TextView    //狀態資訊
-    private lateinit var characterImage: ImageView
+    private lateinit var characterStatusIcon: ImageView //  角色狀態圖示
+    private lateinit var characterImage: ImageView  // 角色
+
+    // 角色用圖片
+    private val characterImages = mapOf(
+        "cool" to R.drawable.emoji_cool,
+        "happy" to R.drawable.emoji_happy,
+        "hungry" to R.drawable.emoji_hungry,
+        "tired" to R.drawable.emoji_tired,
+        "sick" to R.drawable.emoji_sick,
+        "mood" to R.drawable.emoji_mood,
+        "normal" to R.drawable.emoji_normal
+    )
+
+    // 角色跳動/旋轉
+    private val random = java.util.Random()
+    private var isAnimating = false
+    private val animationDuration = 2000L // 動畫持續時間 (毫秒)
+    private val jumpHeight = 20f       // 跳躍高度 (像素)
+    private val maxRotationAngle = 25f  // 最大旋轉角度
+
+    private val animationHandler = android.os.Handler(Looper.getMainLooper())
+    private val animationRunnable = object : Runnable {
+        override fun run() {
+            if (!isAnimating) {
+                animateCharacter()
+            }
+            animationHandler.postDelayed(this, 5000 + random.nextInt(5000).toLong())
+        }
+    }
+
+    // 角色旋轉
+    private var touchStartX = 0f
+    private var currentRotationY = 0f
+    private val minRotationY = -25f // 允許向左旋轉的最大角度
+    private val maxRotationY = 25f  // 允許向右旋轉的最大角度
+
     private lateinit var characterInfo: TextView
     private lateinit var characterResponseTextView: TextView
     private lateinit var characterResponse: CharacterResponse
-    private lateinit var characterInfoButton: Button
     private lateinit var sharedPreferences: SharedPreferences
 
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
 
-    private var isCharacterInfoVisible = false // 控制角色資訊的顯示狀態
     private lateinit var levelInfoList: List<LevelInfo>
 
     // 互動功能
@@ -66,13 +121,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var randomEventManager: RandomEventManager
     private lateinit var eventNotificationTextView: TextView
 
+    // 遭遇
+    private lateinit var herbs: List<Item>
+    private lateinit var treasures: List<Item>
+
     // 背包
     private lateinit var backpack: Backpack // 背包管理
     private lateinit var rvBackpack: RecyclerView // 背包物品列表
     private lateinit var backpackContainer: LinearLayout // 背包 UI 容器
     private lateinit var btnCloseBackpack: Button // 關閉背包按鈕
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -91,7 +150,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mapView = findViewById(R.id.mapView)
-        val staticBackground = findViewById<ImageView>(R.id.staticBackground)
+        staticBackground = findViewById<ImageView>(R.id.staticBackground)
 
         // 檢查是否要顯示 OSM 地圖
         if (showOSM) {
@@ -104,6 +163,18 @@ class MainActivity : AppCompatActivity() {
             staticBackground.visibility = View.VISIBLE
         }
 
+        // 背景效果(依時間改變)
+        updateBackgroundForTime()
+
+        val timeHandler = android.os.Handler(Looper.getMainLooper())
+        val timeRunnable = object : Runnable {
+            override fun run() {
+                updateBackgroundForTime()
+                timeHandler.postDelayed(this, 60000)
+            }
+        }
+        timeHandler.postDelayed(timeRunnable, 60000)
+
         // 設定按鈕
         val settingsButton: Button = findViewById(R.id.buttonSettings)
         settingsButton.setOnClickListener {
@@ -111,13 +182,61 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // 開始角色定時動畫
+        animationHandler.postDelayed(animationRunnable, 5000)
+
         // 初始化 UI 元件
         mapView = findViewById(R.id.mapView)
-        tvStatus = findViewById(R.id.tv_status)
-        characterImage = findViewById(R.id.character_image)
-        characterInfo = findViewById(R.id.character_info)
-        characterResponseTextView = findViewById(R.id.character_response)
-        characterInfoButton = findViewById(R.id.button_info) // 角色資訊按鈕
+        tvStatus = findViewById(R.id.tv_status) // 等級資訊
+        characterImage = findViewById(R.id.character_image) // 角色圖片
+
+
+        // 角色旋轉
+        characterImage.setOnTouchListener { view, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    touchStartX = event.x
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = event.x - touchStartX
+                    val rotationAngle = deltaX / 10f // 調整除數來控制旋轉速度
+                    var newRotationY = currentRotationY - rotationAngle
+
+                    // 限制旋轉角度在指定範圍內
+                    if (newRotationY < minRotationY) {
+                        newRotationY = minRotationY
+                    } else if (newRotationY > maxRotationY) {
+                        newRotationY = maxRotationY
+                    }
+
+                    view.rotationY = newRotationY
+                    currentRotationY = newRotationY
+                    touchStartX = event.x
+                    true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    // 處理點擊事件 (如果需要)
+                    if (Math.abs(event.x - touchStartX) <= 30) {
+                        view.performClick()
+                    }
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        // 處理角色點擊事件
+//        characterImage.setOnClickListener {
+//            Toast.makeText(this, "角色被點擊了", Toast.LENGTH_SHORT).show()
+//        }
+
+        characterStatusIcon = findViewById(R.id.character_status_icon) // 狀態圖示
+        characterInfo = findViewById(R.id.character_info)   // 角色資訊
+        characterResponseTextView = findViewById(R.id.character_response)   // 角色回應
 
         // 初始化 UI
         rvBackpack = findViewById(R.id.rvBackpack)
@@ -139,19 +258,17 @@ class MainActivity : AppCompatActivity() {
                 Log.d("GPS Update", "位置更新: ${location.latitude}, ${location.longitude}")
             }
 
+            // 從 JSON 檔案中讀取背包的物品資料，並將讀取到的資料儲存到 Backpack 類別的 items 映射中
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
             override fun onProviderEnabled(provider: String) {}
             override fun onProviderDisabled(provider: String) {}
         }
 
-        // 預設隱藏角色資訊
-        characterInfo.visibility = View.GONE
-
         // 讀取 SharedPreferences 存儲的數據
         val savedSteps = sharedPreferences.getInt("currentStepsInLevel", 0) // 預設為 0
         val savedLevel = sharedPreferences.getInt("currentLevel", 1) // 預設等級 1
 
-        tvStatus.text = "等級: $savedLevel  |  累積步數: $savedSteps" // 讀取最後一次的累加數值
+        tvStatus.text = getString(R.string.level_and_steps, savedLevel, savedSteps) // 讀取最後一次的累加數值
 
         petStatusTextView = findViewById(R.id.tv_pet_status) // 讀取狀態
 
@@ -174,16 +291,15 @@ class MainActivity : AppCompatActivity() {
             savedLevel,
             { steps, level, response ->
                 runOnUiThread {
-                    tvStatus.text = "等級: $level  |  累積步數: $steps"
+                    tvStatus.text = getString(R.string.level_and_steps, level, steps)
                     Log.d("CharacterResponse", "更新 UI：$response")
 
-                    characterResponseTextView.removeCallbacks(null) // **防止舊的 postDelayed() 還在運行**
+                    characterResponseTextView.removeCallbacks(null)
 
                     if (response.isNotEmpty()) {
                         characterResponseTextView.text = response
                         characterResponseTextView.visibility = View.VISIBLE
 
-                        // **確保對話不會閃爍**
                         characterResponseTextView.postDelayed({
                             if (characterResponseTextView.text == response) {
                                 characterResponseTextView.visibility = View.GONE
@@ -192,12 +308,15 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         characterResponseTextView.visibility = View.GONE
                     }
+
+                    updateCharacterInfo()
                 }
             },
             levelInfoList,
             sharedPreferences,
             characterResponse
         )
+
 
         // 是否開啟 GPS 定位
         if (gpsEnabled) {
@@ -213,26 +332,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 設定角色資訊按鈕的點擊事件
-        characterInfoButton.setOnClickListener {
-            isCharacterInfoVisible = !isCharacterInfoVisible
-            characterInfo.visibility = if (isCharacterInfoVisible) View.VISIBLE else View.GONE
-
-            // 點擊按鈕時才更新角色資訊
-            if (isCharacterInfoVisible) {
-                if (savedLevel in 1..levelInfoList.size) {
-                    val levelInfo = levelInfoList[savedLevel - 1]
-                    val currentGold = sharedPreferences.getInt("player_gold", 0)
-                    characterInfo.text = getString(
-                        R.string.character_info, levelInfo.level, levelInfo.health,
-                        levelInfo.mana, levelInfo.attack, levelInfo.defense, currentGold
-                    )
-                    Log.d("CharacterInfo", "角色資訊按鈕點擊後更新: ${characterInfo.text}")
-                } else {
-                    Log.e("CharacterInfo", "無法取得等級資訊，level: $savedLevel 超出範圍")
-                }
-            }
-        }
+        // 初始化角色資訊
+        updateCharacterInfo()
 
         // 初始化 SensorManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -255,6 +356,16 @@ class MainActivity : AppCompatActivity() {
 
         // ✅ 開始狀態變化（每 60 秒執行一次）
         petUpdateManager.startUpdating()
+
+        // 讀取遭遇物品
+        loadItemsFromJson("herbs.json", object : TypeToken<List<Item>>() {}.type) { items ->
+            herbs = items
+            Log.d("MainActivity", "讀取到 ${herbs.size} 種靈草")
+        }
+        loadItemsFromJson("treasures.json", object : TypeToken<List<Item>>() {}.type) { items ->
+            treasures = items
+            Log.d("MainActivity", "讀取到 ${treasures.size} 種寶藏")
+        }
 
         // 隨機事件
         eventNotificationTextView = findViewById(R.id.tv_event_notification)
@@ -299,9 +410,109 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
     }
 
+    private fun updateBackgroundForTime() {
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+        val background = timeBackgrounds.find { currentHour >= it.startTime && currentHour < it.endTime }
+        if (background != null) {
+            staticBackground.setImageResource(background.drawableId)
+        } else {
+            staticBackground.setImageResource(R.drawable.background_image)
+        }
+    }
+
+    private fun updateCharacterInfo() {
+        val savedLevel = sharedPreferences.getInt("currentLevel", 1)
+        if (savedLevel in 1..levelInfoList.size) {
+            val levelInfo = levelInfoList[savedLevel - 1]
+            val currentGold = sharedPreferences.getInt("player_gold", 0)
+            characterInfo.text = getString(
+                R.string.character_info, levelInfo.level, levelInfo.health,
+                levelInfo.mana, levelInfo.attack, levelInfo.defense, currentGold
+            )
+            Log.d("CharacterInfo", "角色資訊更新: ${characterInfo.text}")
+        } else {
+            Log.e("CharacterInfo", "無法取得等級資訊，level: $savedLevel 超出範圍")
+        }
+    }
+
     private fun updateUI() {
-        petStatusTextView.text = "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
-        Log.d("PetStatus", "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}")
+        petStatusTextView.text = getString(
+            R.string.pet_status,
+            petStatus.energy,
+            petStatus.hunger,
+            petStatus.mood,
+            petStatus.cleanliness
+        )
+        Log.d(
+            "PetStatus",
+            "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
+        )
+
+        var characterImageKey = "cool" // 預設圖片
+
+        if (petStatus.cleanliness < 70) {
+            characterImageKey = "sick"
+        } else if (petStatus.hunger < 70) {
+            characterImageKey = "hungry"
+        } else if (petStatus.energy < 75) {
+            characterImageKey = "tired"
+        } else if (petStatus.mood < 60) {
+            characterImageKey = "mood"
+        } else if (petStatus.hunger < 85 || petStatus.energy < 85 || petStatus.cleanliness < 85 || petStatus.mood < 85) {
+            characterImageKey = "normal"
+        }
+        characterImage.setImageResource(characterImages[characterImageKey] ?: R.drawable.emoji_happy)
+
+    }
+
+    private fun animateCharacter() {
+        if (isAnimating) return  // 如果已經在動畫中，則不重複執行
+
+        isAnimating = true
+
+        val randomAnimation = random.nextInt(2) // 0: 跳動, 1: 旋轉
+
+        if (randomAnimation == 0) {
+            // 跳動動畫 (彈跳效果 - 使用 Interpolator)
+            val jumpHeight = 60f
+            val animationDuration = 700L
+
+            characterImage.animate()
+                .translationYBy(-jumpHeight)
+                .setDuration(animationDuration / 2)
+                .setInterpolator(AccelerateDecelerateInterpolator()) // 加速減速
+                .withEndAction {
+                    characterImage.animate()
+                        .translationY(0f)
+                        .setDuration(animationDuration / 2)
+                        .setInterpolator(AccelerateDecelerateInterpolator())
+                        .withEndAction { isAnimating = false }
+                        .start()
+                }
+                .start()
+        } else {
+            // 旋轉動畫
+            val randomRotation = random.nextFloat() * maxRotationAngle * 2 - maxRotationAngle
+            val animationDuration = 700L  // 減少持續時間
+            characterImage.animate()
+                .rotationBy(randomRotation)
+                .setDuration(animationDuration)
+                .withEndAction {
+                    characterImage.animate()
+                        .rotationBy(-randomRotation)
+                        .setDuration(animationDuration)
+                        .withEndAction {
+                            characterImage.animate()
+                                .rotation(0f)
+                                .setDuration(animationDuration / 2)
+                                .withEndAction { isAnimating = false }
+                                .start()
+                        }
+                        .start()
+                }
+                .start()
+        }
     }
 
     private fun showEventList() {
@@ -317,18 +528,29 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun loadItemsFromJson(fileName: String, itemType: Type, onSuccess: (List<Item>) -> Unit) {
+        try {
+            val jsonString = assets.open(fileName).bufferedReader().use { it.readText() }
+            val items: List<Item> = Gson().fromJson(jsonString, itemType)
+            onSuccess(items)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "讀取 $fileName 失敗: ${e.message}")
+        }
+    }
+
     private fun handleEvent(event: String) {
         when (event) {
-            "遭遇敵人！⚔" -> startBattle()
+//            "遭遇敵人！⚔" -> startBattle()
+//            "遇見修仙 NPC 🧙" -> talkToNPC()
             "發現靈草 🌿" -> collectHerb()
             "找到寶藏 💎" -> collectTreasure()
-            "遇見修仙 NPC 🧙" -> talkToNPC()
+
         }
 
-        randomEventManager.removeEvent(event) // **玩家點擊後，移除該事件**
+        randomEventManager.removeEvent(event)
 
         if (randomEventManager.getEvents().isEmpty()) {
-            eventNotificationTextView.visibility = View.GONE // **當事件都處理完後，隱藏通知**
+            eventNotificationTextView.visibility = View.GONE
         }
     }
 
@@ -343,52 +565,42 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun talkToNPC() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("遇見修仙 NPC")
+            .setMessage("NPC: 你好，修行者。請繼續努力修煉！")
+            .setPositiveButton("確定", null)
+            .show()
+    }
+
     private fun collectHerb() {
-        val herb = Item(
-            itemId = "herb",
-            name = "靈草",
-            quantity = 1,
-            description = "一種能恢復生命的草藥。",
-            rarity = "普通",
-            value = 10,
-            type = "藥水",
-            effects = mapOf("hp" to 50),
-            sellable = true
-        )
-        backpack.addItem(herb)
+        if (herbs.isEmpty()) {
+            Log.e("MainActivity", "靈草列表為空！")
+            return
+        }
+
+        val randomHerb = herbs.random()
+        backpack.addItem(randomHerb)
 
         android.app.AlertDialog.Builder(this)
-            .setTitle("發現靈草！")
-            .setMessage("你撿到了一株靈草，已存入背包！")
+            .setTitle("發現 ${randomHerb.name}！")
+            .setMessage("你撿到了 ${randomHerb.description}，已存入背包！")
             .setPositiveButton("確定", null)
             .show()
     }
 
     private fun collectTreasure() {
-        val treasure = Item(
-            itemId = "treasure",
-            name = "寶藏",
-            quantity = 1,
-            description = "閃閃發光的金幣，能賣個好價錢。",
-            rarity = "史詩",
-            value = 500,
-            type = "貨幣",
-            effects = emptyMap(),
-            sellable = true
-        )
-        backpack.addItem(treasure)  // ✅ 傳入 `Item` 物件
+        if (treasures.isEmpty()) {
+            Log.e("MainActivity", "寶藏列表為空！")
+            return
+        }
+
+        val randomTreasure = treasures.random()
+        backpack.addItem(randomTreasure)
 
         android.app.AlertDialog.Builder(this)
-            .setTitle("找到寶藏！")
-            .setMessage("你挖到了一個寶箱，已存入背包！")
-            .setPositiveButton("確定", null)
-            .show()
-    }
-
-    private fun talkToNPC() {
-        android.app.AlertDialog.Builder(this)
-            .setTitle("遇見修仙 NPC")
-            .setMessage("NPC: 你好，修行者。請繼續努力修煉！")
+            .setTitle("發現 ${randomTreasure.name}！")
+            .setMessage("你找到了 ${randomTreasure.description}，已存入背包！")
             .setPositiveButton("確定", null)
             .show()
     }
@@ -442,7 +654,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     // **賣出物品**
     private fun sellItem(itemId: String) {
         val item = backpack.getItems().find { it.itemId == itemId }
@@ -453,34 +664,53 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            // ✅ 計算金幣與更新
-            val goldEarned = item.value
-            val currentGold = sharedPreferences.getInt("player_gold", 0)
-            val newGold = currentGold + goldEarned
-            sharedPreferences.edit().putInt("player_gold", newGold).apply()
+            val dialogBuilder = AlertDialog.Builder(this)
+            dialogBuilder.setTitle("出售 ${item.name}")
 
-            // ✅ 移除物品並刷新 UI
-            backpack.removeItem(itemId, 1) {
-                showToast("售出 ${item.name} 獲得 $goldEarned 金幣！")
-                showBackpack()
+            val input = EditText(this)
+            input.inputType = InputType.TYPE_CLASS_NUMBER
+            input.hint = "輸入出售數量 (最多 ${item.quantity})"
 
-                // ✅ 如果角色資訊是開啟的，更新金幣顯示
-                if (isCharacterInfoVisible) {
-                    val savedLevel = sharedPreferences.getInt("currentLevel", 1)
-                    if (savedLevel in 1..levelInfoList.size) {
-                        val levelInfo = levelInfoList[savedLevel - 1]
-                        characterInfo.text = getString(
-                            R.string.character_info,
-                            levelInfo.level, levelInfo.health,
-                            levelInfo.mana, levelInfo.attack,
-                            levelInfo.defense, newGold
-                        )
+            val layoutParams = LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT
+            )
+            input.layoutParams = layoutParams
+
+            val container = LinearLayout(this)
+            container.orientation = LinearLayout.VERTICAL
+            container.addView(input)
+
+            dialogBuilder.setView(container)
+
+            dialogBuilder.setPositiveButton("出售") { dialog, _ ->
+                val sellAmount = input.text.toString().toIntOrNull() ?: 1 // 預設值為 1
+                if (sellAmount > 0 && sellAmount <= item.quantity) {
+                    // ✅ 計算金幣與更新
+                    val goldEarned = item.value * sellAmount
+                    val currentGold = sharedPreferences.getInt("player_gold", 0)
+                    val newGold = currentGold + goldEarned
+                    sharedPreferences.edit().putInt("player_gold", newGold).apply()
+
+                    // ✅ 移除物品並刷新 UI
+                    backpack.removeItem(itemId, sellAmount) {
+                        showToast("售出 ${item.name} x$sellAmount 獲得 $goldEarned 金幣！")
+                        showBackpack()
+                        updateCharacterInfo()
                     }
+                } else {
+                    showToast("請輸入有效的出售數量！")
                 }
+                dialog.dismiss()
             }
+
+            dialogBuilder.setNegativeButton("取消") { dialog, _ ->
+                dialog.cancel()
+            }
+
+            dialogBuilder.show()
         }
     }
-
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -496,7 +726,6 @@ class MainActivity : AppCompatActivity() {
             sensorManager.registerListener(
                 stepCounterHelper,
                 it,
-                //SensorManager.SENSOR_DELAY_NORMAL
                 SensorManager.SENSOR_DELAY_UI // ✅ 讓 UI 更新更即時
             )
         }

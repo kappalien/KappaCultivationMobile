@@ -1,6 +1,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,14 +15,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/background_image"
             android:visibility="gone"/>
 
         <!-- OSM 地圖 -->
         <org.osmdroid.views.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </FrameLayout>
 
     <!-- 顯示等級與步數 -->
@@ -86,15 +86,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/character_image"
-        app:layout_constraintHorizontal_bias="0.5"/>
+        app:layout_constraintHorizontal_bias="0.1"  app:layout_constraintVertical_bias="0.9" />
 
     <!-- 左側角色圖像 -->
     <ImageView
         android:id="@+id/character_image"
-        android:layout_width="260dp"
-        android:layout_height="428dp"
+        android:layout_width="181dp"
+        android:layout_height="241dp"
         android:background="@android:color/transparent"
-        android:src="@drawable/character"
         app:layout_constraintBottom_toTopOf="@id/button_layout"
         app:layout_constraintEnd_toStartOf="@id/character_info"
         app:layout_constraintStart_toStartOf="parent"
@@ -109,13 +108,23 @@
         android:background="@android:color/transparent"
         android:padding="8dp"
         android:text=""
-        android:textColor="#000000"
+        android:textColor="#f9e79f"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@id/button_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/character_image"
         app:layout_constraintTop_toBottomOf="@id/tv_status"
         app:layout_constraintVertical_bias="0.99" />
+
+    <!-- 顯示情緒 -->
+    <ImageView
+        android:id="@+id/character_status_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/character_info"
+        app:layout_constraintEnd_toEndOf="@id/character_info"
+        app:layout_constraintStart_toStartOf="@id/character_info" />
 
     <!-- 背包顯示區 -->
     <LinearLayout
@@ -125,7 +134,7 @@
         android:orientation="vertical"
         android:visibility="gone"
         android:background="#88000000"
-        android:padding="16dp">
+        android:padding="55dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -162,21 +171,13 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <Button
-            android:id="@+id/button_info"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="等級"
-            android:alpha="0.5"
-            android:backgroundTint="@color/button_color"/>
-
-        <Button
             android:id="@+id/button_meditate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="修煉"
             android:alpha="0.5"
+            android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
         <Button
@@ -186,6 +187,7 @@
             android:layout_weight="1"
             android:text="餵食"
             android:alpha="0.5"
+            android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
         <Button
@@ -195,6 +197,7 @@
             android:layout_weight="1"
             android:text="娛樂"
             android:alpha="0.5"
+            android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
         <Button
@@ -204,6 +207,7 @@
             android:layout_weight="1"
             android:text="清潔"
             android:alpha="0.5"
+            android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
         <Button
@@ -211,9 +215,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="背包"
             android:alpha="0.5"
-            android:backgroundTint="@color/button_color"/>
+            android:backgroundTint="@color/button_color"
+            android:text="背包"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/buttonSettings"
@@ -222,6 +227,7 @@
             android:layout_weight="1"
             android:text="設定"
             android:alpha="0.5"
+            android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
