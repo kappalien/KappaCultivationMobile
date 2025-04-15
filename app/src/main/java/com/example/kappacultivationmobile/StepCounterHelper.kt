@@ -13,17 +13,18 @@ class StepCounterHelper(
     private val levelInfoList: List<LevelInfo>,
     private val sharedPreferences: SharedPreferences,
     private val characterResponse: CharacterResponse, // 角色回應
-    private var dialogStepInterval: Int = 30 // 🔹 新增：可以設定多少步顯示一次對話（預設 100 步）
+    private var dialogStepInterval: Int = 30, // 🔹 新增：可以設定多少步顯示一次對話（預設 30 步）
+    private val petStatus: PetStatus // ✅ 新增：傳入電子雞狀態
 ) : SensorEventListener {
 
     private var lastDialogStep = 0 // 🔹 **記錄上次顯示對話的步數**
     private var initialStepCount = sharedPreferences.getInt("initialStepCount", -1) // 🔹 記錄起始步數
+    private var energyRestoreAccumulator = 0 // ✅ 新增：累積未處理步數
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             val totalSteps = event.values[0].toInt()
 
-            // 如果還沒初始化 initialStepCount，就設置並儲存
             if (initialStepCount == -1) {
                 initialStepCount = totalSteps
                 sharedPreferences.edit().putInt("initialStepCount", initialStepCount).apply()
@@ -32,9 +33,12 @@ class StepCounterHelper(
             val stepsSinceStart = totalSteps - initialStepCount
             if (stepsSinceStart > currentStepsInLevel) {
                 currentStepsInLevel += 1
-                Log.d("StepCounter", "步數增加，目前累積: $currentStepsInLevel")
+                energyRestoreAccumulator += 1 // ✅ 每步都加進累計器
 
-                // 儲存目前步數到 SharedPreferences
+                // ✅ 每走一步就恢復 1 能量
+                petStatus.energy = (petStatus.energy + 1).coerceAtMost(100)
+                Log.d("PetStatus", "步數回復能量：目前能量 ${petStatus.energy}")
+
                 with(sharedPreferences.edit()) {
                     putInt("currentStepsInLevel", currentStepsInLevel)
                     putInt("currentLevel", currentLevel)
@@ -45,13 +49,10 @@ class StepCounterHelper(
 
                 var response = ""
                 val randomChance = (1..100).random()
-                Log.d("CharacterResponse", "隨機機率: $randomChance，步數: $currentStepsInLevel，升級需求: $nextLevelSteps")
 
                 if (currentStepsInLevel >= nextLevelSteps) {
                     currentLevel++
                     currentStepsInLevel = 0
-
-                    // 更新 initialStepCount 為目前的 sensor 值，避免升級後重複累加
                     initialStepCount = totalSteps
                     sharedPreferences.edit().putInt("initialStepCount", initialStepCount).apply()
 
@@ -62,7 +63,6 @@ class StepCounterHelper(
                     }
 
                     response = characterResponse.getLevelUpResponse()
-                    Log.d("LevelUp", "升級到等級 $currentLevel")
                 } else if (nextLevelSteps - currentStepsInLevel in 1..10) {
                     response = characterResponse.getAlmostLevelUpResponse()
                 } else {
@@ -75,9 +75,10 @@ class StepCounterHelper(
                 }
 
                 onStepCountChanged(currentStepsInLevel, currentLevel, response)
-                Log.d("CharacterResponse", "最終發送對話到 UI: $response")
             }
         }
+        val totalStepsSoFar = sharedPreferences.getInt("steps_total", 0)
+        sharedPreferences.edit().putInt("steps_total", totalStepsSoFar + 1).apply()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {

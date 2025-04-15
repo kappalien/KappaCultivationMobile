@@ -26,6 +26,8 @@
             android:value="KappaCultivationMobile" />
 
         <activity android:name=".BattleActivity" />
+        <activity android:name=".BackpackTabbedActivity" />
+        <activity android:name=".AchievementsActivity" />
 
         <activity
             android:name=".MainActivity"

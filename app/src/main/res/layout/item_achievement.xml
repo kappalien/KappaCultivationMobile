@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <ImageView
+        android:id="@+id/ivAchievementIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_star_gray"
+        android:contentDescription="achievement icon"
+        android:layout_marginEnd="12dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvAchievementName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="成就名稱"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/tvAchievementDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="描述文字"
+            android:textColor=" #dc7633"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvAchievementRarity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="普通"
+        android:textColor="#2e4053"
+        android:textStyle="italic"
+        android:layout_marginStart="8dp"/>
+
+    <ImageView
+        android:id="@+id/ivAchievementUnlocked"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_star_filled"
+        android:contentDescription="已完成成就"
+        android:visibility="gone" />
+</LinearLayout>

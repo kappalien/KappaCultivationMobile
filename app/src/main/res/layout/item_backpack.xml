@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
+    android:background="#99cccccc"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:padding="8dp">
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="#f5da6e "
         android:textSize="14sp" />
 
     <!-- 物品價值 -->

@@ -9,12 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 靜態背景圖片（預設隱藏，當 OSM 關閉時顯示） -->
+        <!-- 背景圖片（預設隱藏，當 OSM 關閉時顯示） -->
         <ImageView
             android:id="@+id/staticBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
+            android:scaleType="fitXY"
             android:visibility="gone"/>
 
         <!-- OSM 地圖 -->
@@ -126,39 +126,6 @@
         app:layout_constraintEnd_toEndOf="@id/character_info"
         app:layout_constraintStart_toStartOf="@id/character_info" />
 
-    <!-- 背包顯示區 -->
-    <LinearLayout
-        android:id="@+id/backpackContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:background="#88000000"
-        android:padding="55dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🎒 你的背包"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:layout_gravity="center"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvBackpack"
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:padding="8dp"/>
-
-        <Button
-            android:id="@+id/btnCloseBackpack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="關閉"
-            android:layout_gravity="center"/>
-    </LinearLayout>
-
     <!-- 底部功能鍵區 -->
     <LinearLayout
         android:id="@+id/button_layout"
@@ -171,22 +138,11 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <Button
-            android:id="@+id/button_meditate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="修煉"
-            android:alpha="0.5"
-            android:textSize="16sp"
-            android:backgroundTint="@color/button_color"/>
-
-        <Button
             android:id="@+id/button_feed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="餵食"
-            android:alpha="0.5"
             android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
@@ -196,7 +152,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="娛樂"
-            android:alpha="0.5"
             android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
 
@@ -206,6 +161,25 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="清潔"
+            android:textSize="16sp"
+            android:backgroundTint="@color/button_color"/>
+
+        <Button
+            android:id="@+id/button_interact"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="互動"
+            android:alpha="0.5"
+            android:textSize="16sp"
+            android:backgroundTint="@color/button_color"/>
+
+        <Button
+            android:id="@+id/button_achievements"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="成就"
             android:alpha="0.5"
             android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 背景圖片（可自訂透明背景圖） -->
+    <ImageView
+        android:id="@+id/achievementBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/background_achievement"
+        android:scaleType="centerCrop"
+        android:alpha="0.7" />
+
+    <!-- 成就內容區塊 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="32dp"
+        android:fitsSystemWindows="true">
+
+        <!-- 專用成就分頁 -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/achievementTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- 專用成就內容頁 -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/achievementViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+</FrameLayout>

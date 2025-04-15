@@ -1,115 +1,261 @@
 [
   {
-    "itemId": "gold_coin",
-    "name": "金幣",
-    "quantity": 10,
-    "description": "遊戲中的貨幣。",
+    "itemId": "clean_1",
+    "name": "靈水瓶",
+    "quantity": 1,
+    "description": "以靈風製成，快速乾燥無痕。",
     "rarity": "普通",
-    "value": 10,
-    "type": "貨幣",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "treasure_chest",
-    "name": "寶箱",
-    "quantity": 1,
-    "description": "一個裝滿寶藏的箱子。",
-    "rarity": "稀有",
-    "value": 200,
-    "type": "其他",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "ancient_map",
-    "name": "藏寶圖",
-    "quantity": 1,
-    "description": "一張古老的藏寶圖，可能指向隱藏的寶藏。",
-    "rarity": "史詩",
-    "value": 500,
-    "type": "任務",
-    "effects": {},
-    "sellable": false
-  },
-  {
-    "itemId": "silver_chalice",
-    "name": "銀聖杯",
-    "quantity": 1,
-    "description": "一個精緻的銀製聖杯。",
-    "rarity": "稀有",
-    "value": 350,
-    "type": "文物",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "golden_idol",
-    "name": "黃金雕像",
-    "quantity": 1,
-    "description": "一個小巧但價值連城的黃金雕像。",
-    "rarity": "稀有",
-    "value": 450,
-    "type": "文物",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "magic_ring",
-    "name": "魔法戒指",
-    "quantity": 1,
-    "description": "一枚散發著微弱光芒的戒指，可能具有魔法力量。",
-    "rarity": "史詩",
-    "value": 800,
-    "type": "裝備",
+    "value": 17,
+    "type": "清潔",
     "effects": {
-      "mana": 10
+      "cleanliness": 57
     },
     "sellable": true
   },
   {
-    "itemId": "gemstone",
-    "name": "寶石",
+    "itemId": "clean_2",
+    "name": "淨塵符",
     "quantity": 1,
-    "description": "一顆閃閃發光的珍貴寶石。",
-    "rarity": "稀有",
-    "value": 600,
-    "type": "材料",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "royal_crown",
-    "name": "皇家王冠",
-    "quantity": 1,
-    "description": "象徵著權力的華麗王冠。",
-    "rarity": "傳說",
-    "value": 1200,
-    "type": "文物",
-    "effects": {},
-    "sellable": true
-  },
-  {
-    "itemId": "ancient_coin",
-    "name": "古代錢幣",
-    "quantity": 5,
-    "description": "來自遙遠時代的錢幣，具有收藏價值。",
+    "description": "一抹即淨，連魂魄都清亮。",
     "rarity": "普通",
-    "value": 50,
-    "type": "收藏品",
-    "effects": {},
+    "value": 22,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 36
+    },
     "sellable": true
   },
   {
-    "itemId": "enchanted_amulet",
-    "name": "魔法護身符",
+    "itemId": "clean_3",
+    "name": "飛羽刷",
     "quantity": 1,
-    "description": "一個刻有神秘符文的護身符，據說可以提供保護。",
-    "rarity": "史詩",
-    "value": 900,
-    "type": "裝備",
+    "description": "只需輕拂即可潔淨如新。",
+    "rarity": "普通",
+    "value": 18,
+    "type": "清潔",
     "effects": {
-      "defense": 5
+      "cleanliness": 62
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_4",
+    "name": "銀絲巾",
+    "quantity": 1,
+    "description": "一抹即淨，連魂魄都清亮。",
+    "rarity": "普通",
+    "value": 13,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 31
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_5",
+    "name": "雲霧香",
+    "quantity": 1,
+    "description": "一抹即淨，連魂魄都清亮。",
+    "rarity": "普通",
+    "value": 37,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 19
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_6",
+    "name": "除穢石",
+    "quantity": 1,
+    "description": "只需輕拂即可潔淨如新。",
+    "rarity": "普通",
+    "value": 38,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 44
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_7",
+    "name": "冰泉露",
+    "quantity": 1,
+    "description": "據說來自靈山聖泉，洗之如新生。",
+    "rarity": "普通",
+    "value": 34,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 37
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_8",
+    "name": "玉露巾",
+    "quantity": 1,
+    "description": "能驅散靈體周圍的污穢氣息。",
+    "rarity": "普通",
+    "value": 20,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 16
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_9",
+    "name": "清心砂",
+    "quantity": 1,
+    "description": "可清洗魔氣附著，還原真身。",
+    "rarity": "普通",
+    "value": 19,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 22
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_10",
+    "name": "風靈掃",
+    "quantity": 1,
+    "description": "清爽不油膩，深層潔淨。",
+    "rarity": "稀有",
+    "value": 21,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 53
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_11",
+    "name": "幻香珠",
+    "quantity": 1,
+    "description": "能驅散靈體周圍的污穢氣息。",
+    "rarity": "稀有",
+    "value": 21,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 17
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_12",
+    "name": "神木刷",
+    "quantity": 1,
+    "description": "能驅散靈體周圍的污穢氣息。",
+    "rarity": "稀有",
+    "value": 40,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 54
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_13",
+    "name": "靈泉布",
+    "quantity": 1,
+    "description": "靈獸專用清潔用品，溫和不刺激。",
+    "rarity": "稀有",
+    "value": 46,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 38
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_14",
+    "name": "霞露露",
+    "quantity": 1,
+    "description": "據說來自靈山聖泉，洗之如新生。",
+    "rarity": "稀有",
+    "value": 50,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 31
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "clean_15",
+    "name": "碧波淨液",
+    "quantity": 1,
+    "description": "一抹即淨，連魂魄都清亮。",
+    "rarity": "稀有",
+    "value": 23,
+    "type": "清潔",
+    "effects": {
+      "cleanliness": 66
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "coin_1",
+    "name": "金幣100",
+    "quantity": 1,
+    "description": "充滿靈氣的錢袋，可兌換金幣。",
+    "rarity": "稀有",
+    "value": 100,
+    "type": "寶藏",
+    "effects": {
+      "gold": 100
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "coin_2",
+    "name": "金幣150",
+    "quantity": 1,
+    "description": "充滿靈氣的錢袋，可兌換金幣。",
+    "rarity": "稀有",
+    "value": 150,
+    "type": "寶藏",
+    "effects": {
+      "gold": 150
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "coin_3",
+    "name": "金幣200",
+    "quantity": 1,
+    "description": "充滿靈氣的錢袋，可兌換金幣。",
+    "rarity": "稀有",
+    "value": 200,
+    "type": "寶藏",
+    "effects": {
+      "gold": 200
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "coin_4",
+    "name": "金幣250",
+    "quantity": 1,
+    "description": "充滿靈氣的錢袋，可兌換金幣。",
+    "rarity": "稀有",
+    "value": 250,
+    "type": "寶藏",
+    "effects": {
+      "gold": 250
+    },
+    "sellable": true
+  },
+  {
+    "itemId": "coin_5",
+    "name": "金幣300",
+    "quantity": 1,
+    "description": "充滿靈氣的錢袋，可兌換金幣。",
+    "rarity": "稀有",
+    "value": 300,
+    "type": "寶藏",
+    "effects": {
+      "gold": 300
     },
     "sellable": true
   }

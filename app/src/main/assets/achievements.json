@@ -1,0 +1,482 @@
+[
+  {
+    "id": "achv_walk_1",
+    "name": "開步人生第一公里",
+    "description": "步伐累積達 1000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 1000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_2",
+    "name": "走路小健將",
+    "description": "步伐累積達 2000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 2000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_3",
+    "name": "街頭漫步王",
+    "description": "步伐累積達 4000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 4000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_4",
+    "name": "日行萬步候選人",
+    "description": "步伐累積達 6000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 6000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_5",
+    "name": "鞋底冒煙中",
+    "description": "步伐累積達 8000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 8000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_6",
+    "name": "萬步達人養成中",
+    "description": "步伐累積達 10000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 10000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_7",
+    "name": "健走的藝術",
+    "description": "步伐累積達 12000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 12000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_8",
+    "name": "地板都認識你了",
+    "description": "步伐累積達 14000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 14000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_9",
+    "name": "城市健走風雲人物",
+    "description": "步伐累積達 16000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 16000
+      }
+    }
+  },
+  {
+    "id": "achv_walk_10",
+    "name": "雙腳踩出傳說",
+    "description": "步伐累積達 18000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "steps": {
+        "gte": 18000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_1",
+    "name": "餵一次算一次",
+    "description": "餵食次數達 100",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 100
+      }
+    }
+  },
+  {
+    "id": "achv_feed_2",
+    "name": "飯局製造機",
+    "description": "餵食次數達 500",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 500
+      }
+    }
+  },
+  {
+    "id": "achv_feed_3",
+    "name": "營養小管家",
+    "description": "餵食次數達 1500",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 1500
+      }
+    }
+  },
+  {
+    "id": "achv_feed_4",
+    "name": "三餐神隊友",
+    "description": "餵食次數達 2000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 2000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_5",
+    "name": "開飯時間！",
+    "description": "餵食次數達 5000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 5000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_6",
+    "name": "餐桌大掌櫃",
+    "description": "餵食次數達 6000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 6000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_7",
+    "name": "永遠吃不飽俱樂部",
+    "description": "餵食次數達 8000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 8000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_8",
+    "name": "米飯的守護者",
+    "description": "餵食次數達 10000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 10000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_9",
+    "name": "一人餵飽全村",
+    "description": "餵食次數達 15000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 15000
+      }
+    }
+  },
+  {
+    "id": "achv_feed_10",
+    "name": "餵食界的傳奇",
+    "description": "餵食次數達 25000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "feed_times": {
+        "gte": 25000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_1",
+    "name": "清潔小萌新",
+    "description": "清潔次數達 500",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 500
+      }
+    }
+  },
+  {
+    "id": "achv_clean_2",
+    "name": "抹布上陣！",
+    "description": "清潔次數達 1000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 1000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_3",
+    "name": "天天掃，天天香",
+    "description": "清潔次數達 1500",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 1500
+      }
+    }
+  },
+  {
+    "id": "achv_clean_4",
+    "name": "髒東西退散！",
+    "description": "清潔次數達 2000",
+    "rarity": "普通",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 2000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_5",
+    "name": "洗刷刷大師",
+    "description": "清潔次數達 5000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 5000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_6",
+    "name": "潔癖也羨慕你",
+    "description": "清潔次數達 10000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 10000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_7",
+    "name": "擦亮新世界",
+    "description": "清潔次數達 15000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 15000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_8",
+    "name": "清爽代表人",
+    "description": "清潔次數達 25000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 25000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_9",
+    "name": "垃圾桶的夢魘",
+    "description": "清潔次數達 30000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 30000
+      }
+    }
+  },
+  {
+    "id": "achv_clean_10",
+    "name": "榮登打掃教科書",
+    "description": "清潔次數達 50000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "clean_times": {
+        "gte": 50000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_1",
+    "name": "零錢開始的旅程",
+    "description": "金幣持有達 50000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 50000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_2",
+    "name": "儲蓄豬快滿了",
+    "description": "金幣持有達 8000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 8000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_3",
+    "name": "金幣收集癮",
+    "description": "金幣持有達 15000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 15000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_4",
+    "name": "存款小金人",
+    "description": "金幣持有達 25000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 25000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_5",
+    "name": "財神都看你很忙",
+    "description": "金幣持有達 35000",
+    "rarity": "稀有",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 35000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_6",
+    "name": "跑步也能賺大錢",
+    "description": "金幣持有達 1000000",
+    "rarity": "傳說",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 1000000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_7",
+    "name": "活力理財家",
+    "description": "金幣持有達 2000000",
+    "rarity": "傳說",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 2000000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_8",
+    "name": "運動理財雙滿分",
+    "description": "金幣持有達 3000000",
+    "rarity": "傳說",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 3000000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_9",
+    "name": "金幣連成牆",
+    "description": "金幣持有達 5000000",
+    "rarity": "傳說",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 5000000
+      }
+    }
+  },
+  {
+    "id": "achv_gold_10",
+    "name": "走出一條財富路",
+    "description": "金幣持有達 10000000",
+    "rarity": "傳說",
+    "type": "成就",
+    "condition": {
+      "gold": {
+        "gte": 10000000
+      }
+    }
+  }
+]
