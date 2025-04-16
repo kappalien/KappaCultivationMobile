@@ -14,9 +14,9 @@
   {
     "id": "cat",
     "name": "貓妖",
-    "health": 80,
-    "attack": 12,
-    "defense": 5,
+    "health": 180,
+    "attack": 30,
+    "defense": 25,
     "skills": [
       "貓爪揮擊",
       "催眠瞳光"
@@ -26,9 +26,9 @@
   {
     "id": "chicken",
     "name": "戰鬥雞",
-    "health": 70,
-    "attack": 10,
-    "defense": 4,
+    "health": 170,
+    "attack": 20,
+    "defense": 15,
     "skills": [
       "啄擊",
       "飛踢"
@@ -38,9 +38,9 @@
   {
     "id": "dog",
     "name": "地獄犬",
-    "health": 110,
-    "attack": 18,
-    "defense": 6,
+    "health": 710,
+    "attack": 40,
+    "defense": 10,
     "skills": [
       "雙重撕咬",
       "惡吼"
@@ -50,9 +50,9 @@
   {
     "id": "ghost",
     "name": "怨靈",
-    "health": 90,
-    "attack": 14,
-    "defense": 6,
+    "health": 500,
+    "attack": 60,
+    "defense": 40,
     "skills": [
       "怨念波",
       "恐懼詛咒"
@@ -62,9 +62,9 @@
   {
     "id": "monkey",
     "name": "靈猴",
-    "health": 100,
-    "attack": 15,
-    "defense": 7,
+    "health": 300,
+    "attack": 25,
+    "defense": 17,
     "skills": [
       "靈活一擊",
       "搶奪"
@@ -74,9 +74,9 @@
   {
     "id": "monster",
     "name": "惡魔獸",
-    "health": 140,
-    "attack": 22,
-    "defense": 10,
+    "health": 540,
+    "attack": 70,
+    "defense": 50,
     "skills": [
       "地裂猛擊",
       "黑暗之爪"
@@ -86,9 +86,9 @@
   {
     "id": "panda",
     "name": "醉拳熊貓",
-    "health": 130,
-    "attack": 16,
-    "defense": 12,
+    "health": 330,
+    "attack": 36,
+    "defense": 22,
     "skills": [
       "醉拳連打",
       "滾地衝鋒"
@@ -98,9 +98,9 @@
   {
     "id": "tiger",
     "name": "猛虎",
-    "health": 125,
-    "attack": 19,
-    "defense": 9,
+    "health": 425,
+    "attack": 39,
+    "defense": 29,
     "skills": [
       "猛撲",
       "虎嘯震懾"

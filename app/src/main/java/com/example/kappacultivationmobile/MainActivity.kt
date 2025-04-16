@@ -29,6 +29,7 @@ import android.util.Log
 import android.view.MotionEvent
 import java.lang.reflect.Type
 import android.os.Looper
+import android.text.Html
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.example.kappacultivationmobile.model.Enemy
@@ -554,10 +555,25 @@ class MainActivity : AppCompatActivity() {
             val levelInfo = levelInfoList[savedLevel - 1]
             val currentGold = sharedPreferences.getInt("player_gold", 0)
             val currentHp = sharedPreferences.getInt("currentHp", levelInfo.health) // 預設滿血
-            characterInfo.text = getString(
-                R.string.character_info_with_hp,
-                levelInfo.level, currentHp, levelInfo.health,
-                levelInfo.mana, levelInfo.attack, levelInfo.defense, currentGold
+
+            val coloredHp = when {
+                currentHp < levelInfo.health * 0.4 -> "<font color='#FF4444'>$currentHp</font>" // 危險紅
+                currentHp < levelInfo.health * 0.7 -> "<font color='#FFBB33'>$currentHp</font>" // 警告橘
+                else -> currentHp.toString()
+            }
+
+            val characterInfoText = """
+            等級: ${levelInfo.level}<br>
+            HP: $coloredHp / ${levelInfo.health}<br>
+            魔力: ${levelInfo.mana}<br>
+            攻擊: ${levelInfo.attack}<br>
+            防禦: ${levelInfo.defense}<br>
+            金幣: $currentGold
+        """.trimIndent()
+
+            characterInfo.setText(
+                Html.fromHtml(characterInfoText, Html.FROM_HTML_MODE_LEGACY),
+                TextView.BufferType.SPANNABLE
             )
             Log.d("CharacterInfo", "角色資訊更新: ${characterInfo.text}")
         } else {
@@ -579,12 +595,25 @@ class MainActivity : AppCompatActivity() {
         )
 
         // 角色圖片切換邏輯
+        // 正常狀態圖片組
         val normalVariants = listOf(
             R.drawable.emoji_normal_1,
             R.drawable.emoji_normal_2,
             R.drawable.emoji_normal_3
         )
 
+        // 損血時
+        val currentLevel = sharedPreferences.getInt("currentLevel", 1)
+        val levelInfo = levelInfoList.getOrNull(currentLevel - 1)
+        val currentHp = sharedPreferences.getInt("currentHp", levelInfo?.health ?: 100)
+
+        // ✅ 血量低於 70%，優先顯示「受傷」圖片
+        if (levelInfo != null && currentHp < levelInfo.health * 0.7) {
+            characterImage.setImageResource(R.drawable.emoji_injured)
+            return
+        }
+
+        // 狀態變更時
         var characterImageKey = "cool" // 預設圖片
         if (petStatus.cleanliness < 70) {
             characterImageKey = "sick"

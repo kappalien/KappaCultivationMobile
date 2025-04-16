@@ -35,7 +35,18 @@ class StepCounterHelper(
                 currentStepsInLevel += 1
                 energyRestoreAccumulator += 1 // ✅ 每步都加進累計器
 
-                // ✅ 每走一步就恢復 1 能量
+                // 每走 20 步回血
+                val levelInfo = levelInfoList[currentLevel - 1]
+                val maxHp = levelInfo.health
+                val currentHp = sharedPreferences.getInt("currentHp", maxHp)
+                if (energyRestoreAccumulator >= 20 && currentHp < maxHp) {
+                    val newHp = (currentHp + 5).coerceAtMost(maxHp)
+                    sharedPreferences.edit().putInt("currentHp", newHp).apply()
+                    energyRestoreAccumulator = 0
+                    Log.d("StepRecovery", "步數回血：$currentHp → $newHp")
+                }
+
+                // 每走一步就恢復 1 能量
                 petStatus.energy = (petStatus.energy + 1).coerceAtMost(100)
                 Log.d("PetStatus", "步數回復能量：目前能量 ${petStatus.energy}")
 
