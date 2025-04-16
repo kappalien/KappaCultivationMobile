@@ -29,14 +29,18 @@ import android.util.Log
 import android.view.MotionEvent
 import java.lang.reflect.Type
 import android.os.Looper
+import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import java.util.Calendar
 import com.example.kappacultivationmobile.model.Enemy
 import com.example.kappacultivationmobile.AchievementManager
 import com.example.kappacultivationmobile.GameState
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
+
+enum class WeatherType {
+    SUNNY, RAINY, SNOWY, NORNAML
+}
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
@@ -48,17 +52,14 @@ class MainActivity : AppCompatActivity() {
     private var stepCounterSensor: Sensor? = null
     private lateinit var stepCounterHelper: StepCounterHelper
 
-    private lateinit var achievementManager: AchievementManager //  成就管理
+    // 天氣
+    private var currentWeather: WeatherType? = null
+    private lateinit var rainEffectManager: RainEffectManager // 天氣管理 (下雨)
+    private lateinit var snowEffectManager: SnowEffectManager // 天氣管理 (下雪)
+    private val weatherHandler = android.os.Handler(Looper.getMainLooper())
+    private lateinit var weatherRunnable: Runnable
 
-    // 依時間改變背景圖片
-    data class TimeBackground(val startTime: Int, val endTime: Int, val drawableId: Int)
-    private val timeBackgrounds = listOf(
-        TimeBackground(0, 6, R.drawable.background_night),
-        TimeBackground(6, 9, R.drawable.background_dawn),
-        TimeBackground(9, 17, R.drawable.background_day),
-        TimeBackground(17, 20, R.drawable.background_dusk),
-        TimeBackground(20, 24, R.drawable.background_night)
-    )
+    private lateinit var achievementManager: AchievementManager //  成就管理
 
     private lateinit var staticBackground: ImageView    // 背景
     private lateinit var tvStatus: TextView // 等級資訊
@@ -130,10 +131,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+
+        // 預設是否保持螢幕常亮
+        if (sharedPreferences.getBoolean("keepScreenOn", true)) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
 
         // 初始化 LocationManager
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -141,16 +148,16 @@ class MainActivity : AppCompatActivity() {
         val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
         val showOSM = sharedPreferences.getBoolean("showOSM", false)
 
-        // 設定 OpenStreetMap 配置
-        Configuration.getInstance().userAgentValue = packageName
-
         // 設定 Activity 的 Layout
         setContentView(R.layout.activity_main)
 
-        mapView = findViewById(R.id.mapView)
-        staticBackground = findViewById<ImageView>(R.id.staticBackground)
+        // 設定 OpenStreetMap 配置
+        Configuration.getInstance().userAgentValue = packageName
+
+        staticBackground = findViewById(R.id.staticBackground)
 
         // 檢查是否要顯示 OSM 地圖
+        mapView = findViewById(R.id.mapView)
         if (showOSM) {
             mapView.visibility = View.VISIBLE
             staticBackground.visibility = View.GONE
@@ -161,17 +168,27 @@ class MainActivity : AppCompatActivity() {
             staticBackground.visibility = View.VISIBLE
         }
 
-        // 背景效果(依時間改變)
-        updateBackgroundForTime()
+        // 預設背景
+        staticBackground.setImageResource(R.drawable.background_day)
 
-        val timeHandler = android.os.Handler(Looper.getMainLooper())
-        val timeRunnable = object : Runnable {
-            override fun run() {
-                updateBackgroundForTime()
-                timeHandler.postDelayed(this, 60000)
+        // 天氣系統
+        val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
+        val buttonArea = findViewById<View>(R.id.button_layout)
+
+        rainEffectManager = RainEffectManager(this, weatherLayer)   // 初始化
+        snowEffectManager = SnowEffectManager(this, weatherLayer)
+
+        // 啟動天氣輪替（立刻執行一次 + 每 1 分鐘切換）
+        buttonArea.post {
+            changeWeather() // 第一次天氣設定，等佈局完成後再執行
+            weatherRunnable = object : Runnable {
+                override fun run() {
+                    changeWeather()
+                    weatherHandler.postDelayed(this, 5 * 60 * 1000)
+                }
             }
+            weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
         }
-        timeHandler.postDelayed(timeRunnable, 60000)
 
         // 互動按鈕
         val btnFeed = findViewById<Button>(R.id.button_feed)
@@ -199,16 +216,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 開始角色定時動畫
-        animationHandler.postDelayed(animationRunnable, 5000)
-
         // 初始化 UI 元件
         mapView = findViewById(R.id.mapView)
         tvStatus = findViewById(R.id.tv_status) // 等級資訊
         characterImage = findViewById(R.id.character_image) // 角色圖片
 
 
-        // 角色旋轉
+        // 角色定時動畫
+        animationHandler.postDelayed(animationRunnable, 3000)
+
+        // 處理角色旋轉事件
         characterImage.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -256,19 +273,17 @@ class MainActivity : AppCompatActivity() {
                     "嘿嘿～",
                     "幹嘛~~！",
                     "你好啊！",
-                    "主人～",
                     "哎呀你又來了～",
                     "摸我嗎？我可是會害羞的喔///",
                     "陪我玩嘛～",
                     "你再戳我我可要反擊囉！",
                     "呼～今天心情不錯～",
                     "你回來啦！我等你好久了～",
-                    "主人的手...溫暖呢～",
+                    "La La La ～",
                     "喵～喵～（開心地叫）",
                     "想不想聽我唱歌～？",
                     "我可是修仙界第一可愛！",
                     "快給我點好吃的嘛！",
-                    "你都不陪我修練了！哼。",
                     "再點我一次試試看？",
                     "嘻嘻～～",
                     "有什麼寶藏要給我嗎？",
@@ -414,7 +429,6 @@ class MainActivity : AppCompatActivity() {
             val restoredHp = (maxHp * 0.2).toInt()
             val newHp = (currentHp + restoredHp).coerceAtMost(maxHp)
             sharedPreferences.edit().putInt("currentHp", newHp).apply()
-//            Toast.makeText(this, "你餵食了角色，恢復 $restoredHp 點 HP！", Toast.LENGTH_SHORT).show()
 
             // 餵食相關成就統計用
             val feedTimes = sharedPreferences.getInt("feed_times", 0) + 1
@@ -474,7 +488,6 @@ class MainActivity : AppCompatActivity() {
         // **初始化背包**
         backpack = Backpack(this)
 
-
         // 設定 "打開背包" 按鈕
         findViewById<Button>(R.id.button_backpack).setOnClickListener {
             startActivity(Intent(this, BackpackTabbedActivity::class.java))
@@ -498,14 +511,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateBackgroundForTime() {
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    private fun changeWeather() {
+        // 先清除目前天氣
+        rainEffectManager.stopRain()
+        snowEffectManager.stopSnow()
 
-        val background = timeBackgrounds.find { currentHour >= it.startTime && currentHour < it.endTime }
-        if (background != null) {
-            staticBackground.setImageResource(background.drawableId)
-        } else {
-            staticBackground.setImageResource(R.drawable.background_image)
+        val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
+        val buttonArea = findViewById<View>(R.id.button_layout)
+
+        when ((1..3).random()) {
+            1 -> {
+                Log.d("WeatherSystem", "☀️ 晴天")
+                currentWeather = WeatherType.SUNNY
+                staticBackground.setImageResource(R.drawable.background_sunny)
+            }
+            2 -> {
+                Log.d("WeatherSystem", "🌧️ 雨天")
+                currentWeather = WeatherType.RAINY
+                staticBackground.setImageResource(R.drawable.background_rainy)
+                rainEffectManager.rainTargetY = buttonArea.top.toFloat() - 70f
+                rainEffectManager.splashY = buttonArea.top.toFloat() - 70f
+                rainEffectManager.startRain(dropCount = 40, angle = 10f)
+            }
+            3 -> {
+                Log.d("WeatherSystem", "❄️ 下雪")
+                currentWeather = WeatherType.SNOWY
+                staticBackground.setImageResource(R.drawable.background_snowy)
+                snowEffectManager.snowTargetY = buttonArea.top.toFloat() - 70f
+                snowEffectManager.startSnow()
+            }
+            4 -> {
+                Log.d("WeatherSystem", "一般")
+                currentWeather = WeatherType.NORNAML
+                staticBackground.setImageResource(R.drawable.background_day)
+            }
         }
     }
 
@@ -721,6 +760,11 @@ class MainActivity : AppCompatActivity() {
         // 更新角色資訊
         updateCharacterInfo()
 
+        // ✅ 恢復天氣系統運作
+        if (::weatherRunnable.isInitialized) {
+            weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
+        }
+
         // 檢查OSM地圖是否顯示
         // **重新讀取最新的 GPS & OSM 設定**
         val showOSM = sharedPreferences.getBoolean("showOSM", false)
@@ -759,6 +803,9 @@ class MainActivity : AppCompatActivity() {
                 Log.e("StepCounter", "步數監聽器未註冊，無法取消註冊: ${e.message}")
             }
         }
+
+        // 停止天氣
+        weatherHandler.removeCallbacks(weatherRunnable)
 
         // **停止 GPS 監聽**
         if (::locationManager.isInitialized) {

@@ -12,6 +12,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var switchBackgroundSteps: Switch
     private lateinit var switchGPS: Switch
     private lateinit var switchShowOSM: Switch
+    private lateinit var switchKeepScreenOn: Switch
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,12 @@ class SettingsActivity : AppCompatActivity() {
 
         switchShowOSM.setOnCheckedChangeListener { _, isChecked -> // ➜ 新增 OSM 設定
             sharedPreferences.edit().putBoolean("showOSM", isChecked).apply()
+        }
+
+        switchKeepScreenOn = findViewById(R.id.switchKeepScreenOn)
+        switchKeepScreenOn.isChecked = sharedPreferences.getBoolean("keepScreenOn", true)
+        switchKeepScreenOn.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit().putBoolean("keepScreenOn", isChecked).apply()
         }
     }
 }

@@ -204,4 +204,14 @@
             android:textSize="16sp"
             android:backgroundTint="@color/button_color"/>
     </LinearLayout>
+
+    <!-- 顯示天氣 -->
+    <FrameLayout
+        android:id="@+id/weather_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        tools:ignore="MissingConstraints"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
