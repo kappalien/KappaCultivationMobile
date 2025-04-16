@@ -129,11 +129,11 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
+        Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
+        Configuration.getInstance().userAgentValue = "com.example.kappacultivationmobile/1.0 (KappaApp)"
+
         super.onCreate(savedInstanceState)
 
-
-        Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
-        Configuration.getInstance().userAgentValue = packageName
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
@@ -158,11 +158,12 @@ class MainActivity : AppCompatActivity() {
 
         // 檢查是否要顯示 OSM 地圖
         mapView = findViewById(R.id.mapView)
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setMultiTouchControls(true)
+
         if (showOSM) {
             mapView.visibility = View.VISIBLE
             staticBackground.visibility = View.GONE
-            mapView.setTileSource(TileSourceFactory.MAPNIK)
-            mapView.setMultiTouchControls(true)
         } else {
             mapView.visibility = View.GONE
             staticBackground.visibility = View.VISIBLE
@@ -388,6 +389,10 @@ class MainActivity : AppCompatActivity() {
         // 初始化成就管理
         achievementManager = AchievementManager(this)
 
+        // 設定地圖
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setMultiTouchControls(true)
+
         // 是否開啟 GPS 定位
         if (gpsEnabled) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -408,11 +413,6 @@ class MainActivity : AppCompatActivity() {
         // 初始化 SensorManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        // 設定地圖
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-
 
         // ✅ 綁定 UI 按鈕
         // 餵食
@@ -578,8 +578,14 @@ class MainActivity : AppCompatActivity() {
             "能量: ${petStatus.energy} | 飢餓: ${petStatus.hunger} | 心情: ${petStatus.mood} | 清潔: ${petStatus.cleanliness}"
         )
 
-        var characterImageKey = "cool" // 預設圖片
+        // 角色圖片切換邏輯
+        val normalVariants = listOf(
+            R.drawable.emoji_normal_1,
+            R.drawable.emoji_normal_2,
+            R.drawable.emoji_normal_3
+        )
 
+        var characterImageKey = "cool" // 預設圖片
         if (petStatus.cleanliness < 70) {
             characterImageKey = "sick"
         } else if (petStatus.hunger < 70) {
@@ -589,10 +595,12 @@ class MainActivity : AppCompatActivity() {
         } else if (petStatus.mood < 60) {
             characterImageKey = "mood"
         } else if ((petStatus.hunger + petStatus.energy + petStatus.cleanliness + petStatus.mood) / 4 < 90) {
-            characterImageKey = "normal"
+            characterImage.setImageResource(normalVariants.random())
+            return
         }
         characterImage.setImageResource(characterImages[characterImageKey] ?: R.drawable.emoji_happy)
 
+        // 取得各狀態 (成就系統需要)
         val gameState = GameState(
             steps = sharedPreferences.getInt("steps_total", 0),
             feed_times = sharedPreferences.getInt("feed_times", 0),
@@ -765,17 +773,40 @@ class MainActivity : AppCompatActivity() {
             weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
         }
 
-        // 檢查OSM地圖是否顯示
-        // **重新讀取最新的 GPS & OSM 設定**
+        // ✅ 恢復 Keep Screen On 設定
+        if (::sharedPreferences.isInitialized) {
+            if (sharedPreferences.getBoolean("keepScreenOn", true)) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+
+        // 檢查 OSM 地圖是否顯示
         val showOSM = sharedPreferences.getBoolean("showOSM", false)
         val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
 
-        // **更新 OSM 顯示狀態**
-        mapView.visibility = if (showOSM) View.VISIBLE else View.GONE
+        if (showOSM) {
+            mapView.visibility = View.VISIBLE
+            staticBackground.visibility = View.GONE
 
-        // **檢查 GPS 設定**
+            // ✅ 加入這段，等 MapView layout 完成後再設置中心與縮放
+            mapView.post {
+                val defaultPoint = GeoPoint(25.0330, 121.5654) // 台北 101
+                mapView.controller.setCenter(defaultPoint)
+                mapView.controller.setZoom(18.0)
+                Log.d("OSM_TEST", "首次顯示時 setCenter & setZoom")
+            }
+
+        } else {
+            mapView.visibility = View.GONE
+            staticBackground.visibility = View.VISIBLE
+        }
+
+        // 檢查 GPS 設定
         if (gpsEnabled) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
                 getLocationAndSetMapCenter()
             } else {
                 checkPermissions() // 只有當權限真的缺少時，才請求權限
@@ -866,8 +897,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 mapView.controller.setCenter(startPoint)
-                mapView.setMultiTouchControls(false) // 啟用手勢縮放
-                mapView.controller.setZoom(20.0)
+                mapView.setMultiTouchControls(true) // 啟用手勢縮放
+                mapView.controller.setZoom(18.0)
 
                 // 移除舊的標記，避免重複顯示
                 mapView.overlays.clear()

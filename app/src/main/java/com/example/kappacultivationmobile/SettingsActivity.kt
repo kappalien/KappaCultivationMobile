@@ -3,6 +3,7 @@ package com.example.kappacultivationmobile
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 
@@ -42,6 +43,7 @@ class SettingsActivity : AppCompatActivity() {
 
         switchShowOSM.setOnCheckedChangeListener { _, isChecked -> // ➜ 新增 OSM 設定
             sharedPreferences.edit().putBoolean("showOSM", isChecked).apply()
+            Log.d("OSM_TEST", "切換 OSM 開關為: $isChecked")
         }
 
         switchKeepScreenOn = findViewById(R.id.switchKeepScreenOn)
