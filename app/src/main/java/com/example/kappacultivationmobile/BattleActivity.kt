@@ -20,8 +20,6 @@ import com.example.kappacultivationmobile.model.Enemy
 import com.example.kappacultivationmobile.LevelCalculator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlin.math.roundToInt
-import java.lang.StringBuilder
 
 // 戰鬥狀態機
 enum class BattleState {
