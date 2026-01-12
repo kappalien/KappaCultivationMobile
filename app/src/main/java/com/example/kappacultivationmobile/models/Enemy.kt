@@ -1,4 +1,4 @@
-package com.example.kappacultivationmobile.model
+package com.example.kappacultivationmobile.models
 
 import java.io.Serializable
 

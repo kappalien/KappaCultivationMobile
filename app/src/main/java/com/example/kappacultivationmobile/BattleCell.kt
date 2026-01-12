@@ -1,6 +1,6 @@
 package com.example.kappacultivationmobile.battle.model
 
-import com.example.kappacultivationmobile.model.Enemy
+import com.example.kappacultivationmobile.models.Enemy
 
 // 定義格子內可能有的內容類型
 enum class CellType {

@@ -2,9 +2,9 @@ package com.example.kappacultivationmobile.battle
 
 import com.example.kappacultivationmobile.battle.model.BattleCell
 import com.example.kappacultivationmobile.battle.model.CellType
-import com.example.kappacultivationmobile.model.Enemy
+import com.example.kappacultivationmobile.models.Enemy
 import kotlin.math.abs
-import com.example.kappacultivationmobile.LevelMilestone
+import com.example.kappacultivationmobile.models.LevelMilestone
 
 /**
  * BattleEngine 負責處理棋盤戰鬥的所有核心邏輯。

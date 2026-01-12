@@ -1,6 +1,6 @@
 package com.example.kappacultivationmobile
 
-import com.example.kappacultivationmobile.model.Enemy
+import com.example.kappacultivationmobile.models.Enemy
 
 
 object BattleLogic {

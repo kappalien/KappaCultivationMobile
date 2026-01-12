@@ -1,4 +1,4 @@
-package com.example.kappacultivationmobile
+package com.example.kappacultivationmobile.models
 
 data class LevelMilestone(
     val level: Int,

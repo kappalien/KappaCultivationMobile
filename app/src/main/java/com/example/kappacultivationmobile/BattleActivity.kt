@@ -1,6 +1,5 @@
 package com.example.kappacultivationmobile.battle
 
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -11,12 +10,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kappacultivationmobile.BgmManager
-import com.example.kappacultivationmobile.LevelMilestone
+import com.example.kappacultivationmobile.models.LevelMilestone
 import com.example.kappacultivationmobile.R
-import com.example.kappacultivationmobile.battle.model.BattleCell
 import com.example.kappacultivationmobile.battle.model.CellType
 import com.example.kappacultivationmobile.battle.ui.BattleGridAdapter
-import com.example.kappacultivationmobile.model.Enemy
+import com.example.kappacultivationmobile.models.Enemy
 import com.example.kappacultivationmobile.LevelCalculator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

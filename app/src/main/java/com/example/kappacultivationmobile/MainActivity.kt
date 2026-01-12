@@ -33,8 +33,9 @@ import android.os.Looper
 import android.text.Html
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import com.example.kappacultivationmobile.model.Enemy
+import com.example.kappacultivationmobile.models.Enemy
 import com.example.kappacultivationmobile.battle.BattleActivity
+import com.example.kappacultivationmobile.models.LevelMilestone
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
