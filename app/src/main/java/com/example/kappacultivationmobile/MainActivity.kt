@@ -112,8 +112,8 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
 
-    private lateinit var levelInfoList: List<LevelInfo> // 等級資訊
-    private lateinit var playerInfo: LevelInfo  // 角色資訊
+    private lateinit var levelMilestones: List<LevelMilestone>
+    private lateinit var currentPlayerStats: LevelMilestone
 
 
     // 互動功能
@@ -391,16 +391,14 @@ class MainActivity : AppCompatActivity() {
 
         // 解析 level_info.json
         val jsonString = assets.open("level_info.json").bufferedReader().use { it.readText() }
-        levelInfoList = Gson().fromJson(jsonString, typeToken<List<LevelInfo>>().type)
-        Log.d("CharacterInfo", "levelInfoList 解析後的大小: ${levelInfoList.size}")
+        levelMilestones = Gson().fromJson(jsonString, object : TypeToken<List<LevelMilestone>>() {}.type)
+
+        // ✅ 關鍵：初始化計算機
+        LevelCalculator.init(levelMilestones)
+        Log.d("CharacterInfo", "levelInfoList 解析後的大小: ${levelMilestones.size}")
 
         // 讀取敵人.json
         loadEnemiesFromJson()
-
-        // 確保 JSON 正常讀取
-        if (levelInfoList.isEmpty()) {
-            Log.e("CharacterInfo", "levelInfoList 為空，可能 JSON 讀取失敗！")
-        }
 
         // 初始化角色回應
         characterResponse = CharacterResponse()
@@ -437,7 +435,7 @@ class MainActivity : AppCompatActivity() {
                     updateCharacterInfo()
                 }
             },
-            levelInfoList,
+            levelMilestones,
             sharedPreferences,
             characterResponse,
             30, // 每 30 步觸發對話機率（可自訂）
@@ -493,25 +491,32 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 餵食按鈕邏輯
+        // 餵食按鈕邏輯
         findViewById<Button>(R.id.button_feed).setOnClickListener {
+            // 1. 執行寵物基礎動作 (飢餓度等)
             petActions.feed()
-            updateUI()
 
-            // ✅ 回血處理邏輯放這裡（不要放在 PetActions）
-            val currentLevel = sharedPreferences.getInt("currentLevel", 1)
-            val levelInfo = levelInfoList[currentLevel - 1]
-            val maxHp = levelInfo.health
+            // 2. 回血處理邏輯 (使用 currentPlayerStats)
+            val maxHp = currentPlayerStats.health
+            val oldHp = sharedPreferences.getInt("currentHp", maxHp)
 
-            val currentHp = sharedPreferences.getInt("currentHp", maxHp)
-            val restoredHp = (maxHp * 0.2).toInt()
-            val newHp = (currentHp + restoredHp).coerceAtMost(maxHp)
-            sharedPreferences.edit().putInt("currentHp", newHp).apply()
+            // 計算回復 20%
+            val restoredAmount = (maxHp * 0.2).toInt()
+            val updatedHp = (oldHp + restoredAmount).coerceAtMost(maxHp)
 
-            // 餵食相關成就統計用
+            // 3. 儲存數值與成就統計
             val feedTimes = sharedPreferences.getInt("feed_times", 0) + 1
-            sharedPreferences.edit().putInt("feed_times", feedTimes).apply()
 
-            updateCharacterInfo()
+            sharedPreferences.edit()
+                .putInt("currentHp", updatedHp)
+                .putInt("feed_times", feedTimes)
+                .apply()
+
+            // 4. 更新畫面
+            updateCharacterInfo() // 刷新 HP 文字顯示
+            updateUI()            // 刷新圖片狀態
+
+            Toast.makeText(this, "餵食成功！回復了 $restoredAmount HP", Toast.LENGTH_SHORT).show()
         }
 
         // 娛樂按鈕邏輯
@@ -793,34 +798,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateCharacterInfo() {
         val savedLevel = sharedPreferences.getInt("currentLevel", 1)
-        if (savedLevel in 1..levelInfoList.size) {
-            val levelInfo = levelInfoList[savedLevel - 1]
-            val currentGold = sharedPreferences.getInt("player_gold", 0)
-            val currentHp = sharedPreferences.getInt("currentHp", levelInfo.health) // 預設滿血
 
-            val coloredHp = when {
-                currentHp < levelInfo.health * 0.4 -> "<font color='#FF4444'>$currentHp</font>" // 危險紅
-                currentHp < levelInfo.health * 0.7 -> "<font color='#FFBB33'>$currentHp</font>" // 警告橘
-                else -> currentHp.toString()
-            }
+        // 使用計算機取得精確數值
+        val stats = LevelCalculator.getStatsForLevel(savedLevel)
+        currentPlayerStats = stats // 更新當前狀態
 
-            val characterInfoText = """
-            等級: ${levelInfo.level}<br>
-            HP: $coloredHp / ${levelInfo.health}<br>
-            魔力: ${levelInfo.mana}<br>
-            攻擊: ${levelInfo.attack}<br>
-            防禦: ${levelInfo.defense}<br>
+        val currentGold = sharedPreferences.getInt("player_gold", 0)
+        val currentHp = sharedPreferences.getInt("currentHp", stats.health)
+
+        // 設定 HP 文字顏色 (危險紅/警告橘)
+        val coloredHp = when {
+            currentHp < stats.health * 0.4 -> "<font color='#FF4444'>$currentHp</font>"
+            currentHp < stats.health * 0.7 -> "<font color='#FFBB33'>$currentHp</font>"
+            else -> currentHp.toString()
+        }
+
+        val characterInfoText = """
+            等級: ${stats.level}<br>
+            HP: $coloredHp / ${stats.health}<br>
+            魔力: ${stats.mana}<br>
+            攻擊: ${stats.attack}<br>
+            防禦: ${stats.defense}<br>
             金幣: $currentGold
         """.trimIndent()
 
-            characterInfo.setText(
-                Html.fromHtml(characterInfoText, Html.FROM_HTML_MODE_LEGACY),
-                TextView.BufferType.SPANNABLE
-            )
-            Log.d("CharacterInfo", "角色資訊更新: ${characterInfo.text}")
-        } else {
-            Log.e("CharacterInfo", "無法取得等級資訊，level: $savedLevel 超出範圍")
-        }
+        characterInfo.setText(
+            Html.fromHtml(characterInfoText, Html.FROM_HTML_MODE_LEGACY),
+            TextView.BufferType.SPANNABLE
+        )
     }
 
     private fun updateUI() {
@@ -845,29 +850,27 @@ class MainActivity : AppCompatActivity() {
         )
 
         // 損血時
-        val currentLevel = sharedPreferences.getInt("currentLevel", 1)
-        val levelInfo = levelInfoList.getOrNull(currentLevel - 1)
-        val currentHp = sharedPreferences.getInt("currentHp", levelInfo?.health ?: 100)
+        val currentHp = sharedPreferences.getInt("currentHp", currentPlayerStats.health)
 
         // ✅ 血量低於 70%，優先顯示「受傷」圖片
-        if (levelInfo != null && currentHp < levelInfo.health * 0.7) {
+        if (currentHp < currentPlayerStats.health * 0.7) {
             characterImage.setImageResource(R.drawable.emoji_injured)
             return
         }
 
         // 狀態變更時
-        var characterImageKey = "cool" // 預設圖片
-        if (petStatus.cleanliness < 70) {
-            characterImageKey = "sick"
-        } else if (petStatus.hunger < 70) {
-            characterImageKey = "hungry"
-        } else if (petStatus.energy < 75) {
-            characterImageKey = "tired"
-        } else if (petStatus.mood < 60) {
-            characterImageKey = "mood"
-        } else if ((petStatus.hunger + petStatus.energy + petStatus.cleanliness + petStatus.mood) / 4 < 90) {
-            characterImage.setImageResource(normalVariants.random())
-            return
+        var characterImageKey = "cool"
+        when {
+            petStatus.cleanliness < 70 -> characterImageKey = "sick"
+            petStatus.hunger < 70 -> characterImageKey = "hungry"
+            petStatus.energy < 75 -> characterImageKey = "tired"
+            petStatus.mood < 60 -> characterImageKey = "mood"
+            // 如果狀態都很平均且不錯，隨機顯示正常圖片
+            (petStatus.hunger + petStatus.energy + petStatus.cleanliness + petStatus.mood) / 4 >= 90 -> {
+                val normalVariants = listOf(R.drawable.emoji_normal_1, R.drawable.emoji_normal_2, R.drawable.emoji_normal_3)
+                characterImage.setImageResource(normalVariants.random())
+                return
+            }
         }
         characterImage.setImageResource(characterImages[characterImageKey] ?: R.drawable.emoji_happy)
 
