@@ -1,7 +1,8 @@
 [
   {
-    "id": "alien",
+    "id": 1,
     "name": "外星人",
+    "level": 5,
     "health": 120,
     "attack": 20,
     "defense": 8,
@@ -12,8 +13,9 @@
     "image": "alien.png"
   },
   {
-    "id": "cat",
+    "id": 2,
     "name": "貓妖",
+    "level": 8,
     "health": 180,
     "attack": 30,
     "defense": 25,
@@ -24,8 +26,9 @@
     "image": "cat.png"
   },
   {
-    "id": "chicken",
+    "id": 3,
     "name": "戰鬥雞",
+    "level": 3,
     "health": 170,
     "attack": 20,
     "defense": 15,
@@ -36,8 +39,9 @@
     "image": "chicken.png"
   },
   {
-    "id": "dog",
+    "id": 4,
     "name": "地獄犬",
+    "level": 15,
     "health": 710,
     "attack": 40,
     "defense": 10,
@@ -48,8 +52,9 @@
     "image": "dog.png"
   },
   {
-    "id": "ghost",
+    "id": 5,
     "name": "怨靈",
+    "level": 12,
     "health": 500,
     "attack": 60,
     "defense": 40,
@@ -60,8 +65,9 @@
     "image": "ghost.png"
   },
   {
-    "id": "monkey",
+    "id": 6,
     "name": "靈猴",
+    "level": 7,
     "health": 300,
     "attack": 25,
     "defense": 17,
@@ -72,8 +78,9 @@
     "image": "monkey.png"
   },
   {
-    "id": "monster",
+    "id": 7,
     "name": "惡魔獸",
+    "level": 20,
     "health": 540,
     "attack": 70,
     "defense": 50,
@@ -84,8 +91,9 @@
     "image": "monster.png"
   },
   {
-    "id": "panda",
+    "id": 8,
     "name": "醉拳熊貓",
+    "level": 10,
     "health": 330,
     "attack": 36,
     "defense": 22,
@@ -96,8 +104,9 @@
     "image": "panda.png"
   },
   {
-    "id": "tiger",
+    "id": 9,
     "name": "猛虎",
+    "level": 14,
     "health": 425,
     "attack": 39,
     "defense": 29,

@@ -1,92 +1,147 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ✅ 半透明背景 -->
     <ImageView
         android:id="@+id/battleBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:src="@drawable/background_battle"
         android:scaleType="centerCrop"
-        android:alpha="0.5" />
+        android:alpha="0.5"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="16dp">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chessboard"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="4dp"
+        android:background="#1A000000"  android:scrollbars="vertical"  app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/statusLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <ImageView
-            android:id="@+id/enemyImageView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:scaleType="fitCenter"
-            android:layout_gravity="center"/>
-
-        <TextView
-            android:id="@+id/enemyHpTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="敵人 HP"
-            android:textColor="#FFFFFF"
-            android:gravity="center"
-            android:padding="4dp" />
-
-        <ProgressBar
-            android:id="@+id/enemyHpBar"
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:progress="100"
-            android:max="100"
-            style="@android:style/Widget.ProgressBar.Horizontal"
-            android:progressTint="#00FF00" />
+    <LinearLayout
+        android:id="@+id/statusLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="#C0000000"
+        app:layout_constraintBottom_toTopOf="@id/battleLogTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
             android:id="@+id/playerHpTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="玩家 HP"
+            android:text="玩家 HP: 100 / 100"
             android:textColor="#FFFFFF"
-            android:gravity="center"
-            android:padding="4dp" />
+            android:padding="2dp" />
 
         <ProgressBar
             android:id="@+id/playerHpBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
-            android:layout_height="10dp"
+            android:layout_height="8dp"
             android:progress="100"
             android:max="100"
-            style="@android:style/Widget.ProgressBar.Horizontal"
             android:progressTint="#00FF00" />
 
         <TextView
-            android:id="@+id/battleLogTextView"
+            android:id="@+id/enemyStatusSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="戰鬥開始"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:background="#33000000"/>
+            android:text="敵人數量：3"
+            android:textColor="#FDD835"
+            android:gravity="end"
+            android:padding="2dp" />
 
-        <Button
-            android:id="@+id/attackButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="普通攻擊"
-            android:textSize="20sp"
-            android:backgroundTint="#AA3333"
-            android:textColor="#FFFFFF"/>
-
-        <Button
-            android:id="@+id/escapeButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="逃跑"
-            android:textSize="18sp"
-            android:backgroundTint="#444444"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="8dp"/>
     </LinearLayout>
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/battleLogTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:text="戰鬥開始！請選擇行動。"
+        android:gravity="start"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:maxLines="3"
+        android:background="#D0212121"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/actionMenuLayout"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <View
+            android:id="@+id/menuBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_menu_glow"
+            android:alpha="0.6" />
+
+        <ImageButton
+            android:id="@+id/moveButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_menu_directions"
+            android:scaleType="centerInside"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageButton
+            android:id="@+id/attackButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_menu_compass"
+            android:scaleType="centerInside"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageButton
+            android:id="@+id/endTurnButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_menu_send"
+            android:scaleType="centerInside"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageButton
+            android:id="@+id/escapeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_menu_close_clear_cancel"
+            android:scaleType="centerInside"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

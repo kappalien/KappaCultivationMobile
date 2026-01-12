@@ -4,36 +4,30 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class BackpackPagerAdapter(
+class MarketPagerAdapter(
     fragmentActivity: FragmentActivity,
-    private val backpack: Backpack,
+    private val items: List<Item>,
     private val onItemClick: (Item) -> Unit
 ) : FragmentStateAdapter(fragmentActivity) {
 
     private val categories = listOf(
         "全部" to null,
         "食物" to "食物",
-        "清潔" to "清潔",
-        "寶藏" to "寶藏"
+        "清潔" to "清潔"
     )
 
-    // ✅ 儲存已建立的 Fragment 實例
-    private val fragmentList: MutableList<BackpackTabFragment?> = MutableList(categories.size) { null }
-
+    private val fragmentList: MutableList<MarketTabFragment?> = MutableList(categories.size) { null }
 
     override fun getItemCount(): Int = categories.size
 
     override fun createFragment(position: Int): Fragment {
         val (_, type) = categories[position]
-        val fragment = BackpackTabFragment.newInstance(type, backpack, onItemClick)
+        val fragment = MarketTabFragment.newInstance(type, items, onItemClick)
         fragmentList[position] = fragment
         return fragment
     }
 
-    // ✅ 提供外部取得 Fragment 的方法
-    fun getFragment(position: Int): BackpackTabFragment? {
-        return fragmentList.getOrNull(position)
-    }
+    fun getFragment(position: Int): MarketTabFragment? = fragmentList.getOrNull(position)
 
     fun getTabTitle(position: Int): String = categories[position].first
 }

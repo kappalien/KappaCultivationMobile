@@ -10,4 +10,6 @@
     <color name="item_name_color">#000000</color> <!-- 物品名稱顏色 (黑色) -->
     <color name="item_rarity_color">#888888</color> <!-- 物品稀有度顏色 (灰色) -->
     <color name="item_value_color">#FFD700</color> <!-- 物品價值顏色 (金色) -->
+    <color name="highlight_move">#A04CAF50</color>
+    <color name="highlight_attack">#A0F44336</color>
 </resources>

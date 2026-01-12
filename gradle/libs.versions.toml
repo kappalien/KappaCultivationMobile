@@ -1,18 +1,19 @@
 [versions]
-agp = "8.9.1"
+agp = "8.13.1"
 kotlin = "1.9.0"
-coreKtx = "1.13.1"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.5"
-activityCompose = "1.9.2"
-composeBom = "2023.08.00"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.10.1"
+composeBom = "2025.04.00"
 constraintlayout = "2.2.1"
 material = "1.12.0"
 osmdroidAndroid = "6.1.16"
 appcompat = "1.7.0"
 gson = "2.10.1"
+lifecycleProcess = "2.8.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,8 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroidAndroid" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+androidx_lifecycle_process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

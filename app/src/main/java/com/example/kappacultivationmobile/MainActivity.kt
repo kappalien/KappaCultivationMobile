@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,8 +34,7 @@ import android.text.Html
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.example.kappacultivationmobile.model.Enemy
-import com.example.kappacultivationmobile.AchievementManager
-import com.example.kappacultivationmobile.GameState
+import com.example.kappacultivationmobile.battle.BattleActivity
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
@@ -65,8 +65,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var staticBackground: ImageView    // 背景
     private lateinit var tvStatus: TextView // 等級資訊
     private lateinit var petStatusTextView: TextView    //狀態資訊
-    private lateinit var characterStatusIcon: ImageView //  角色狀態圖示
+    private lateinit var marketIcon: ImageView //  商城圖示
     private lateinit var characterImage: ImageView  // 角色
+
+    private var isNavigatingToOtherActivity = false // 是否正在導航到其他 Activity
 
     // 角色用圖片
     private val characterImages = mapOf(
@@ -135,8 +137,19 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+        // 設定 Activity 的 Layout
+        setContentView(R.layout.activity_main)
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+
+        // 背景音樂
+        val selectedBGM = sharedPreferences.getInt("mainBgmSelection", 0)
+        val bgmResId = when (selectedBGM) {
+            0 -> R.raw.bgm_1
+            1 -> R.raw.bgm_2
+            2 -> R.raw.bgm_3
+            else -> null
+        }
 
         // 預設是否保持螢幕常亮
         if (sharedPreferences.getBoolean("keepScreenOn", true)) {
@@ -148,9 +161,6 @@ class MainActivity : AppCompatActivity() {
 
         val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
         val showOSM = sharedPreferences.getBoolean("showOSM", false)
-
-        // 設定 Activity 的 Layout
-        setContentView(R.layout.activity_main)
 
         // 設定 OpenStreetMap 配置
         Configuration.getInstance().userAgentValue = packageName
@@ -175,7 +185,7 @@ class MainActivity : AppCompatActivity() {
 
         // 天氣系統
         val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
-        val buttonArea = findViewById<View>(R.id.button_layout)
+        val buttonArea = findViewById<View>(R.id.main_button_layout)
 
         rainEffectManager = RainEffectManager(this, weatherLayer)   // 初始化
         snowEffectManager = SnowEffectManager(this, weatherLayer)
@@ -196,24 +206,72 @@ class MainActivity : AppCompatActivity() {
         val btnFeed = findViewById<Button>(R.id.button_feed)
         val btnPlay = findViewById<Button>(R.id.button_play)
         val btnClean = findViewById<Button>(R.id.button_clean)
-        val btnInteract = findViewById<Button>(R.id.button_interact)
-        val btnAchievement = findViewById<Button>(R.id.button_achievements)
+        val btnInteract = findViewById<Button>(R.id.button_interact) // 仍然需要找到主按鈕
 
-        val interactButtons = listOf(btnFeed, btnPlay, btnClean)
-        interactButtons.forEach { it.visibility = View.GONE } // 初始隱藏 互動的子功能按鍵
+        // 探險按鈕
+        val btnExplore = findViewById<Button>(R.id.button_explore)
+        val btnExploreOut = findViewById<Button>(R.id.button_explore_out)
+        val btnExploreChallenge = findViewById<Button>(R.id.button_explore_challenge)
 
-        btnInteract.setOnClickListener {
-            val newVisibility = if (btnFeed.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-            interactButtons.forEach { it.visibility = newVisibility }
+        // 初始隱藏 探險的子功能按鍵
+        val interactButtons = listOf(btnFeed, btnPlay, btnClean) // 原本的互動子按鈕
+        val exploreButtons = listOf(btnExploreOut, btnExploreChallenge) // 新增的探險子按鈕
+
+        // 初始隱藏 互動的子功能按鍵
+        interactButtons.forEach { it.visibility = View.GONE }
+        exploreButtons.forEach { it.visibility = View.GONE } // 初始隱藏 探險的子功能按鍵
+
+        // 探險主按鈕點擊事件：展開/收合
+        btnExplore.setOnClickListener {
+            // 1. 判斷是否要展開探險子按鈕
+            val newVisibility = if (btnExploreOut.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+
+            // 2. 隱藏互動的子按鈕群組 (新增的邏輯)
+            interactButtons.forEach { it.visibility = View.GONE }
+
+            // 3. 執行探險子按鈕的顯示/隱藏操作
+            exploreButtons.forEach { it.visibility = newVisibility }
+
+            // (可選) 讓子按鈕在點擊時顯示在最上層
+            if (newVisibility == View.VISIBLE) {
+                findViewById<View>(R.id.explore_group).bringToFront()
+            }
         }
 
+        // 互動主按鈕點擊事件：展開/收合
+        btnInteract.setOnClickListener {
+            // 1. 判斷是否要展開互動子按鈕
+            val newVisibility = if (btnFeed.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+
+            // 2. 隱藏探險的子按鈕群組 (新增的邏輯)
+            exploreButtons.forEach { it.visibility = View.GONE }
+
+            // 3. 對所有的互動子按鈕執行顯示/隱藏操作
+            interactButtons.forEach { it.visibility = newVisibility }
+
+            // (可選) 讓子按鈕在點擊時顯示在最上層
+            if (newVisibility == View.VISIBLE) {
+                findViewById<View>(R.id.interact_group).bringToFront()
+            }
+        }
+
+        val btnAchievement = findViewById<Button>(R.id.button_achievements) // 宣告一個變數 btnAchievement，並透過 R.id.button_achievements 找到 XML 佈局中「成就」按鈕元件
+        val btnBackpack = findViewById<Button>(R.id.button_backpack)       // 宣告 btnBackpack，並找到 XML 中「背包」按鈕元件
+        val btnSettings = findViewById<Button>(R.id.buttonSettings)         // 宣告 btnSettings，並找到 XML 中「設定」按鈕元件
+
+        // 為「成就」按鈕設定點擊事件監聽器
         btnAchievement.setOnClickListener {
+            isNavigatingToOtherActivity = true // 設定標記，表示 App 正在切換畫面 (避免背景音樂被誤判為退到後台而暫停)
+
+            // 啟動 AchievementsActivity 畫面
+            // Intent 用來指定要從當前 Activity (this) 切換到 AchievementsActivity 類別所代表的畫面
             startActivity(Intent(this, AchievementsActivity::class.java))
         }
 
         // 設定按鈕
         val settingsButton: Button = findViewById(R.id.buttonSettings)
         settingsButton.setOnClickListener {
+            isNavigatingToOtherActivity = true
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
@@ -284,7 +342,7 @@ class MainActivity : AppCompatActivity() {
                     "La La La ～",
                     "喵～喵～（開心地叫）",
                     "想不想聽我唱歌～？",
-                    "我可是修仙界第一可愛！",
+                    "我可是第一可愛！",
                     "快給我點好吃的嘛！",
                     "再點我一次試試看？",
                     "嘻嘻～～",
@@ -299,7 +357,6 @@ class MainActivity : AppCompatActivity() {
             }, 4000)
         }
 
-        characterStatusIcon = findViewById(R.id.character_status_icon) // 狀態圖示
         characterInfo = findViewById(R.id.character_info)   // 角色資訊
         characterResponseTextView = findViewById(R.id.character_response)   // 角色回應
 
@@ -411,12 +468,31 @@ class MainActivity : AppCompatActivity() {
         // 初始化角色資訊
         updateCharacterInfo()
 
+        // ✅ 初始化音效管理器
+        EffectSoundManager.init(applicationContext)
+
+
         // 初始化 SensorManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         // ✅ 綁定 UI 按鈕
-        // 餵食
+        //商城頁面入口圖示邏輯
+        marketIcon = findViewById(R.id.market_icon) // 商城圖示
+        marketIcon.setOnClickListener {
+            isNavigatingToOtherActivity = true
+            val intent = Intent(this, MarketActivity::class.java)
+            startActivity(intent)
+        }
+
+        // 穿戴頁面入口圖示邏輯 (請確保您的 Activity 名稱是 EquipmentActivity)
+        val equipmentIcon: ImageView = findViewById(R.id.equipment_icon)
+        equipmentIcon.setOnClickListener {
+            // 顯示「開發中」提示訊息
+            Toast.makeText(this, "裝備穿戴頁面 - 開發中...", Toast.LENGTH_SHORT).show()
+        }
+
+        // 餵食按鈕邏輯
         findViewById<Button>(R.id.button_feed).setOnClickListener {
             petActions.feed()
             updateUI()
@@ -438,7 +514,7 @@ class MainActivity : AppCompatActivity() {
             updateCharacterInfo()
         }
 
-        // 娛樂
+        // 娛樂按鈕邏輯
         findViewById<Button>(R.id.button_play).setOnClickListener {
             petActions.play()
             updateUI()
@@ -448,7 +524,7 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit().putInt("play_times", playTimes).apply()
         }
 
-        // 清潔
+        // 清潔按鈕邏輯
         findViewById<Button>(R.id.button_clean).setOnClickListener {
             petActions.clean()
             updateUI()
@@ -457,15 +533,32 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit().putInt("clean_times", cleanTimes).apply()
         }
 
+        // 外出按鈕邏輯
+        btnExploreOut.setOnClickListener {
+            // 💡 外出功能：可設定為啟動或停止 GPS/步數追蹤，或清除地圖標記等
+            Toast.makeText(this, "你開始外出探險了！", Toast.LENGTH_SHORT).show()
+
+            // TODO: 新增外出時間/距離計算
+        }
+
+        // 挑戰按鈕邏輯
+        btnExploreChallenge.setOnClickListener {
+            // 💡 挑戰功能：可設定為立即觸發一次隨機事件，或進入一個戰鬥列表介面
+            Toast.makeText(this, "你決定挑戰強敵！", Toast.LENGTH_SHORT).show()
+
+            // 假設我們要立即觸發一個隨機戰鬥 (類似現有的 random event)
+            startBattle() // 重用現有的戰鬥啟動函數
+        }
+
         // ✅ 開始狀態變化（每 60 秒執行一次）
         petUpdateManager.startUpdating()
 
         // 讀取遭遇物品
-        loadItemsFromJson("herbs.json", object : TypeToken<List<Item>>() {}.type) { items ->
+        loadItemsFromJson("herbs.json", object : TypeToken<List<Item>>() {}.type) { items: List<Item> -> // 👈 顯式指定類型
             herbs = items
             Log.d("MainActivity", "讀取到 ${herbs.size} 種靈草")
         }
-        loadItemsFromJson("treasures.json", object : TypeToken<List<Item>>() {}.type) { items ->
+        loadItemsFromJson("treasures.json", object : TypeToken<List<Item>>() {}.type) { items: List<Item> -> // 👈 顯式指定類型
             treasures = items
             Log.d("MainActivity", "讀取到 ${treasures.size} 種寶藏")
         }
@@ -491,12 +584,161 @@ class MainActivity : AppCompatActivity() {
 
         // 設定 "打開背包" 按鈕
         findViewById<Button>(R.id.button_backpack).setOnClickListener {
+            isNavigatingToOtherActivity = true
             startActivity(Intent(this, BackpackTabbedActivity::class.java))
         }
+
+        // 檢查裝置是否支援 TYPE_STEP_COUNTER
+        val hasStepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
+        Log.d("SensorCheck", "裝置是否支援 TYPE_STEP_COUNTER：$hasStepSensor")
+
+        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        Log.d("PermissionCheck", "目前是否有 ACTIVITY_RECOGNITION 權限：$hasPermission")
+
+        val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
+        Log.d("StepConfig", "backgroundSteps 設定為：$backgroundStepsEnabled")
 
 
         // 檢查權限
         checkPermissions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isNavigatingToOtherActivity = false
+
+        if (::mapView.isInitialized) {
+            mapView.onResume()
+        }
+
+        // ✅ 根據使用者是否允許背景步數計算來判斷是否啟用感應器
+        val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
+        Log.d("StepResume", "onResume() 呼叫，backgroundSteps=$backgroundStepsEnabled")
+
+        if (backgroundStepsEnabled) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.ACTIVITY_RECOGNITION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d("StepResume", "✅ 權限已授權，準備註冊感應器")
+                stepCounterSensor?.let {
+                    sensorManager.registerListener(
+                        stepCounterHelper,
+                        it,
+                        SensorManager.SENSOR_DELAY_UI
+                    )
+                    Log.d("StepResume", "✅ 已註冊步數感應器 listener")
+                } ?: Log.e("StepResume", "❌ stepCounterSensor 為 null，無法註冊")
+            } else {
+                Log.w("StepResume", "❌ 沒有 ACTIVITY_RECOGNITION 權限")
+            }
+        } else {
+            Log.d("StepResume", "❌ 背景步數計算設定為 false，不註冊感應器")
+        }
+
+        // 更新角色資訊
+        updateCharacterInfo()
+
+        // ✅ 背景音樂播放
+        val selectedBGM = sharedPreferences.getInt("mainBgmSelection", 0)
+        val bgmResId = when (selectedBGM) {
+            0 -> R.raw.bgm_1
+            1 -> R.raw.bgm_2
+            2 -> R.raw.bgm_3
+            else -> R.raw.bgm_1
+        }
+        BgmManager.play(this, bgmResId, "Main")
+
+        // ✅ 恢復天氣系統運作
+        if (::weatherRunnable.isInitialized) {
+            weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
+        }
+
+        // ✅ 恢復 Keep Screen On 設定
+        if (::sharedPreferences.isInitialized) {
+            if (sharedPreferences.getBoolean("keepScreenOn", true)) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+
+        // 檢查 OSM 地圖是否顯示
+        val showOSM = sharedPreferences.getBoolean("showOSM", false)
+        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
+
+        if (showOSM) {
+            mapView.visibility = View.VISIBLE
+            staticBackground.visibility = View.GONE
+
+            // ✅ 加入這段，等 MapView layout 完成後再設置中心與縮放
+            mapView.post {
+                val defaultPoint = GeoPoint(25.0330, 121.5654) // 台北 101
+                mapView.controller.setCenter(defaultPoint)
+                mapView.controller.setZoom(18.0)
+                Log.d("OSM_TEST", "首次顯示時 setCenter & setZoom")
+            }
+
+        } else {
+            mapView.visibility = View.GONE
+            staticBackground.visibility = View.VISIBLE
+        }
+
+        // 檢查 GPS 設定
+        if (gpsEnabled) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+                getLocationAndSetMapCenter()
+            } else {
+                checkPermissions() // 只有當權限真的缺少時，才請求權限
+            }
+        } else {
+            if (::locationManager.isInitialized) {
+                locationManager.removeUpdates(locationListener)
+                isTrackingLocation = false
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::mapView.isInitialized) {
+            mapView.onPause()   // 停止地圖更新，減少背景運行
+        }
+
+        // ✅ 依據使用者設定決定是否停止步數計算
+        val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
+        if (!backgroundStepsEnabled && ::sensorManager.isInitialized) {
+            try {
+                sensorManager.unregisterListener(stepCounterHelper)
+            } catch (e: Exception) {
+                Log.e("StepCounter", "步數監聽器未註冊，無法取消註冊: ${e.message}")
+            }
+        }
+
+        // 停止天氣
+        weatherHandler.removeCallbacks(weatherRunnable)
+
+        // **停止 GPS 監聽**
+        if (::locationManager.isInitialized) {
+            locationManager.removeUpdates(locationListener)
+            isTrackingLocation = false
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!isNavigatingToOtherActivity) {
+            BgmManager.pause()
+            Log.d("BGM", "App 退到背景，暫停音樂")
+        } else {
+            Log.d("BGM", "切換至其他功能頁，不暫停音樂")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        BgmManager.stop()
     }
 
     // 遭遇戰鬥
@@ -518,7 +760,7 @@ class MainActivity : AppCompatActivity() {
         snowEffectManager.stopSnow()
 
         val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
-        val buttonArea = findViewById<View>(R.id.button_layout)
+        val buttonArea = findViewById<View>(R.id.main_button_layout)
 
         when ((1..3).random()) {
             1 -> {
@@ -735,10 +977,10 @@ class MainActivity : AppCompatActivity() {
     private fun startBattle() {
         val selectedEnemy = enemies.random()
         val intent = Intent(this, BattleActivity::class.java)
+        // intent.putExtra("enemy", selectedEnemy)
         intent.putExtra("enemy", selectedEnemy)
         startActivity(intent)
     }
-
 
     private fun talkToNPC() {
         android.app.AlertDialog.Builder(this)
@@ -778,128 +1020,6 @@ class MainActivity : AppCompatActivity() {
             .setMessage("你找到了 ${randomTreasure.description}，已存入背包！")
             .setPositiveButton("確定", null)
             .show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (::mapView.isInitialized) {
-            mapView.onResume()
-        }
-
-        stepCounterSensor?.let {
-            sensorManager.registerListener(
-                stepCounterHelper,
-                it,
-                SensorManager.SENSOR_DELAY_UI // ✅ 讓 UI 更新更即時
-            )
-        }
-
-        // 更新角色資訊
-        updateCharacterInfo()
-
-        // ✅ 恢復天氣系統運作
-        if (::weatherRunnable.isInitialized) {
-            weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
-        }
-
-        // ✅ 恢復 Keep Screen On 設定
-        if (::sharedPreferences.isInitialized) {
-            if (sharedPreferences.getBoolean("keepScreenOn", true)) {
-                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            } else {
-                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-        }
-
-        // 檢查 OSM 地圖是否顯示
-        val showOSM = sharedPreferences.getBoolean("showOSM", false)
-        val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
-
-        if (showOSM) {
-            mapView.visibility = View.VISIBLE
-            staticBackground.visibility = View.GONE
-
-            // ✅ 加入這段，等 MapView layout 完成後再設置中心與縮放
-            mapView.post {
-                val defaultPoint = GeoPoint(25.0330, 121.5654) // 台北 101
-                mapView.controller.setCenter(defaultPoint)
-                mapView.controller.setZoom(18.0)
-                Log.d("OSM_TEST", "首次顯示時 setCenter & setZoom")
-            }
-
-        } else {
-            mapView.visibility = View.GONE
-            staticBackground.visibility = View.VISIBLE
-        }
-
-        // 檢查 GPS 設定
-        if (gpsEnabled) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-                getLocationAndSetMapCenter()
-            } else {
-                checkPermissions() // 只有當權限真的缺少時，才請求權限
-            }
-        } else {
-            if (::locationManager.isInitialized) {
-                locationManager.removeUpdates(locationListener)
-                isTrackingLocation = false
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (::mapView.isInitialized) {
-            mapView.onPause()   // 停止地圖更新，減少背景運行
-        }
-
-        // ✅ 依據使用者設定決定是否停止步數計算
-        val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
-        if (!backgroundStepsEnabled && ::sensorManager.isInitialized) {
-            try {
-                sensorManager.unregisterListener(stepCounterHelper)
-            } catch (e: Exception) {
-                Log.e("StepCounter", "步數監聽器未註冊，無法取消註冊: ${e.message}")
-            }
-        }
-
-        // 停止天氣
-        weatherHandler.removeCallbacks(weatherRunnable)
-
-        // **停止 GPS 監聽**
-        if (::locationManager.isInitialized) {
-            locationManager.removeUpdates(locationListener)
-            isTrackingLocation = false
-        }
-    }
-
-    private fun checkPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            getLocationAndSetMapCenter()
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
-            )
-        }
-
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACTIVITY_RECOGNITION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-                REQUEST_ACTIVITY_RECOGNITION_PERMISSION
-            )
-        } else {
-            startStepCounter()
-        }
     }
 
     private fun startStepCounter() {
@@ -951,6 +1071,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkPermissions() {
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            getLocationAndSetMapCenter()
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACTIVITY_RECOGNITION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                REQUEST_ACTIVITY_RECOGNITION_PERMISSION
+            )
+        } else {
+            startStepCounter()
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -968,6 +1116,10 @@ class MainActivity : AppCompatActivity() {
                     .setPositiveButton("確定") { _, _ -> }
                     .show()
             }
+        }
+
+        if (requestCode == REQUEST_ACTIVITY_RECOGNITION_PERMISSION) {
+            Log.d("PermissionCheck", "onRequestPermissionsResult：步數權限回傳 result=${grantResults.joinToString()}")
         }
 
         if (requestCode == REQUEST_ACTIVITY_RECOGNITION_PERMISSION) {

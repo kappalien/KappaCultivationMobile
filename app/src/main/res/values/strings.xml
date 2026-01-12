@@ -4,4 +4,9 @@
     <string name="character_info_with_hp">等級: %1$d\nHP: %2$d / %3$d\n靈力: %4$d\n攻擊: %5$d\n防禦: %6$d\n金幣: %7$d</string>
     <string name="pet_status">能量: %1$d | 飢餓: %2$d | 心情: %3$d | 清潔: %4$d</string>
     <string name="level_and_steps">等級: %1$d  |  累積步數: %2$d</string>
+    <string-array name="main_bgm_options">
+        <item>主題音樂 1</item>
+        <item>主題音樂 2</item>
+        <item>主題音樂 3</item>
+    </string-array>
 </resources>

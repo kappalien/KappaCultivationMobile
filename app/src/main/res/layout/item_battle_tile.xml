@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="@android:color/transparent">
+
+    <ImageView
+        android:id="@+id/cellBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background_battle"
+        android:padding="0.5dp"
+        android:background="#66FFFFFF"/>
+
+    <ImageView
+        android:id="@+id/unitImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerInside" />
+
+    <ProgressBar
+        android:id="@+id/enemyHpBar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="2dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:progressTint="#FF0000"
+        android:background="#40000000"
+        android:visibility="gone"
+        tools:visibility="visible"
+        tools:progress="70" />
+
+    <TextView
+        android:id="@+id/unitStatusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="6dp"
+        android:textSize="10sp"
+        android:textColor="#FFFFFF"
+        android:background="#A0000000"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:visibility="gone"
+        tools:text="Lv.5"/>
+
+</FrameLayout>

@@ -8,48 +8,46 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class BackpackTabFragment : Fragment() {
+class MarketTabFragment : Fragment() {
 
     companion object {
-        fun newInstance(type: String?, backpack: Backpack, onItemClick: (Item) -> Unit): BackpackTabFragment {
-            val fragment = BackpackTabFragment()
+        fun newInstance(type: String?, items: List<Item>, onItemClick: (Item) -> Unit): MarketTabFragment {
+            val fragment = MarketTabFragment()
             fragment.filterType = type
-            fragment.backpack = backpack
+            fragment.fullItemList = items
             fragment.onItemClick = onItemClick
             return fragment
         }
     }
 
     private var filterType: String? = null
-    private lateinit var backpack: Backpack
+    private lateinit var fullItemList: List<Item>
     private lateinit var onItemClick: (Item) -> Unit
-    private var recyclerView: RecyclerView? = null // 🔹 保留 RecyclerView 實例以便重載資料
+    private var recyclerView: RecyclerView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_backpack_tab, container, false)
-        recyclerView = view.findViewById(R.id.rvBackpackTab)
+        val view = inflater.inflate(R.layout.fragment_market_tab, container, false)
+        recyclerView = view.findViewById(R.id.rvMarketTab)
         recyclerView?.layoutManager = GridLayoutManager(requireContext(), 3)
 
-        loadItems() // 初始載入資料
+        loadItems()
         return view
     }
 
-    // ✅ 提供給外部呼叫的刷新方法
     fun refreshItems() {
         loadItems()
     }
 
-    // ✅ 共用邏輯：根據分類重載資料
     private fun loadItems() {
-        val items = if (filterType == null) {
-            backpack.getItems()
+        val filtered = if (filterType == null) {
+            fullItemList
         } else {
-            backpack.getItems().filter { it.type == filterType }
+            fullItemList.filter { it.type == filterType }
         }
-        recyclerView?.adapter = BackpackAdapter(items.toMutableList(), onItemClick)
+        recyclerView?.adapter = MarketAdapter(filtered.toMutableList(), onItemClick)
     }
 }

@@ -25,9 +25,10 @@
             android:name="org.osmdroid.OsmdroidTileProvider.UserAgent"
             android:value="KappaCultivationMobile" />
 
-        <activity android:name=".BattleActivity" />
+        <activity android:name=".battle.BattleActivity" />
         <activity android:name=".BackpackTabbedActivity" />
         <activity android:name=".AchievementsActivity" />
+        <activity android:name=".MarketActivity" />
 
         <activity
             android:name=".MainActivity"

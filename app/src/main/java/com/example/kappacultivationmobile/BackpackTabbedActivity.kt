@@ -1,4 +1,3 @@
-// BackpackTabbedActivity.kt
 package com.example.kappacultivationmobile
 
 import android.app.AlertDialog
@@ -27,16 +26,19 @@ class BackpackTabbedActivity : AppCompatActivity() {
         tabLayout = findViewById(R.id.backpackTabLayout)
         viewPager = findViewById(R.id.backpackViewPager)
 
+        // 初始化 adapter 並處理點擊事件
         adapter = BackpackPagerAdapter(this, backpack) { item ->
             showItemOptions(item)
         }
         viewPager.adapter = adapter
 
+        // 設定 Tab 文字
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = adapter.getTabTitle(position)
         }.attach()
     }
 
+    // ✅ 顯示物品操作選項（使用、出售）
     private fun showItemOptions(item: Item) {
         val options = mutableListOf<String>()
         if (item.effects.isNotEmpty()) options.add("使用")
@@ -59,16 +61,18 @@ class BackpackTabbedActivity : AppCompatActivity() {
             .show()
     }
 
+    // ✅ 使用物品
     private fun useItem(itemId: String) {
         val item = backpack.getItems().find { it.itemId == itemId } ?: return
 
         Toast.makeText(this, "你使用了 ${item.name}", Toast.LENGTH_SHORT).show()
 
         backpack.removeItem(itemId, 1) {
-            adapter.notifyDataSetChanged()
+            refreshCurrentTab()
         }
     }
 
+    // ✅ 出售物品（預設最大值）
     private fun sellItem(itemId: String) {
         val item = backpack.getItems().find { it.itemId == itemId } ?: return
 
@@ -82,7 +86,8 @@ class BackpackTabbedActivity : AppCompatActivity() {
 
         val input = EditText(this)
         input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
-        input.hint = "輸入出售數量 (最多 ${item.quantity})"
+        input.setText(item.quantity.toString())          // ✅ 預設最大值
+        input.setSelection(input.text.length)            // ✅ 游標移至末尾
 
         val container = LinearLayout(this)
         container.orientation = LinearLayout.VERTICAL
@@ -101,7 +106,7 @@ class BackpackTabbedActivity : AppCompatActivity() {
 
                 backpack.removeItem(itemId, sellAmount) {
                     Toast.makeText(this, "售出 ${item.name} x$sellAmount，獲得 $goldEarned 金幣！", Toast.LENGTH_SHORT).show()
-                    adapter.notifyDataSetChanged()
+                    refreshCurrentTab()
                 }
             } else {
                 Toast.makeText(this, "請輸入有效的出售數量！", Toast.LENGTH_SHORT).show()
@@ -111,5 +116,11 @@ class BackpackTabbedActivity : AppCompatActivity() {
 
         dialogBuilder.setNegativeButton("取消") { dialog, _ -> dialog.dismiss() }
         dialogBuilder.show()
+    }
+
+    // ✅ 重新刷新目前顯示中的分頁
+    private fun refreshCurrentTab() {
+        val currentIndex = viewPager.currentItem
+        adapter.getFragment(currentIndex)?.refreshItems()
     }
 }

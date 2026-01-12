@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
+import android.widget.Spinner
+import android.widget.AdapterView
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -21,6 +23,29 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+
+        // 綁定 Spinner
+        val spinnerMainBGM: Spinner = findViewById(R.id.spinnerMainBGM)
+
+        // 讀取 SharedPreferences 中的目前選擇
+        val savedIndex = sharedPreferences.getInt("mainBgmSelection", 0)
+        spinnerMainBGM.setSelection(savedIndex)
+
+        var isFirstSelection = true
+
+        // 設定變更事件監聽器
+        spinnerMainBGM.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                if (isFirstSelection) {
+                    isFirstSelection = false
+                    return
+                }
+                sharedPreferences.edit().putInt("mainBgmSelection", position).apply()
+                Log.d("Settings", "使用者選擇 BGM: $position")
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         // 綁定 UI 元件
         switchBackgroundSteps = findViewById(R.id.switchBackgroundSteps)
