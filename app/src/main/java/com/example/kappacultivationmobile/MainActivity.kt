@@ -1,8 +1,11 @@
 package com.example.kappacultivationmobile
 
 import android.Manifest
+import android.util.Log
+import android.text.Html
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.Sensor
@@ -10,7 +13,16 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.view.View
+import android.view.MotionEvent
+import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -18,21 +30,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import android.content.Intent
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import android.util.Log
-import android.view.MotionEvent
 import java.lang.reflect.Type
-import android.os.Looper
-import android.text.Html
-import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import com.example.kappacultivationmobile.models.Enemy
 import com.example.kappacultivationmobile.battle.BattleActivity
 import com.example.kappacultivationmobile.models.LevelMilestone
@@ -113,7 +113,6 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
 
-    private lateinit var levelMilestones: List<LevelMilestone>
     private lateinit var currentPlayerStats: LevelMilestone
 
 
@@ -390,16 +389,7 @@ class MainActivity : AppCompatActivity() {
 
         petStatusTextView = findViewById(R.id.tv_pet_status) // 讀取狀態
 
-        // 解析 level_info.json
-        val jsonString = assets.open("level_info.json").bufferedReader().use { it.readText() }
-        levelMilestones = Gson().fromJson(jsonString, object : TypeToken<List<LevelMilestone>>() {}.type)
 
-        // ✅ 關鍵：初始化計算機
-        LevelCalculator.init(levelMilestones)
-        Log.d("CharacterInfo", "levelInfoList 解析後的大小: ${levelMilestones.size}")
-
-        // 讀取敵人.json
-        loadEnemiesFromJson()
 
         // 初始化角色回應
         characterResponse = CharacterResponse()
@@ -748,7 +738,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // 遭遇戰鬥
-    private lateinit var enemies: List<Enemy>
     private fun loadEnemiesFromJson() {
         try {
             val json = assets.open("enemies.json").bufferedReader().use { it.readText() }
@@ -979,9 +968,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startBattle() {
-        val selectedEnemy = enemies.random()
+        val selectedEnemy = EnemyManager.getRandomEnemy() ?: return
         val intent = Intent(this, BattleActivity::class.java)
-        // intent.putExtra("enemy", selectedEnemy)
         intent.putExtra("enemy", selectedEnemy)
         startActivity(intent)
     }
