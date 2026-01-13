@@ -36,6 +36,8 @@ import java.lang.reflect.Type
 import com.example.kappacultivationmobile.models.Enemy
 import com.example.kappacultivationmobile.battle.BattleActivity
 import com.example.kappacultivationmobile.models.LevelMilestone
+import com.example.kappacultivationmobile.EnemyManager
+import com.example.kappacultivationmobile.LevelCalculator
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
