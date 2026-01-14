@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity() {
     private var stepCounterSensor: Sensor? = null
     private lateinit var stepCounterHelper: StepCounterHelper
 
+    private val levelManager = LevelManager()   // 等級管理
+
     // 天氣
     private var currentWeather: WeatherType? = null
     private lateinit var rainEffectManager: RainEffectManager // 天氣管理 (下雨)
@@ -70,6 +72,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var petStatusTextView: TextView    //狀態資訊
     private lateinit var marketIcon: ImageView //  商城圖示
     private lateinit var characterImage: ImageView  // 角色
+
+    private val levelMilestones = listOf(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    private var enemies: MutableList<Enemy> = mutableListOf()
 
     private var isNavigatingToOtherActivity = false // 是否正在導航到其他 Activity
 
