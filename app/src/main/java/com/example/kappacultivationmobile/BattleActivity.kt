@@ -15,9 +15,9 @@ import com.example.kappacultivationmobile.R
 import com.example.kappacultivationmobile.battle.model.CellType
 import com.example.kappacultivationmobile.battle.ui.BattleGridAdapter
 import com.example.kappacultivationmobile.models.Enemy
-import com.example.kappacultivationmobile.LevelCalculator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.example.kappacultivationmobile.LevelManager
 
 // 戰鬥狀態機
 enum class BattleState {
@@ -60,6 +60,8 @@ class BattleActivity : AppCompatActivity() {
     private var currentState = BattleState.PREPARING
     private var playerMoveRange = 3 // 玩家可移動的格子數
 
+    private val levelManager = LevelManager()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_battle)
@@ -91,10 +93,8 @@ class BattleActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("app_settings", MODE_PRIVATE)
         val playerLevel = sharedPreferences.getInt("currentLevel", 1)
 
-        // 載入 LevelInfo
-        // 1. 呼叫我們剛改好的 loadLevelInfo，它現在會回傳 LevelMilestone 並初始化計算機
-        val milestone = loadLevelInfo(playerLevel)
-        currentPlayerStats = milestone // 確保你在 Activity 頂部有宣告這個變數
+        // ✅ 修改處：使用 LevelManager 取得玩家數值
+        currentPlayerStats = levelManager.getStatsForLevel(playerLevel)
 
         // 2. 更新血量邏輯
         // 注意：現在是用 currentPlayerStats.health 而非 playerInfo.health
@@ -424,18 +424,6 @@ class BattleActivity : AppCompatActivity() {
         }
     }
 
-    // 載入 LevelInfo 邏輯 (需要與您的 LevelInfo 類別匹配)
-    private fun loadLevelInfo(level: Int): LevelMilestone {
-        val json = assets.open("level_info.json").bufferedReader().use { it.readText() }
-        val type = object : TypeToken<List<LevelMilestone>>() {}.type
-        val milestones: List<LevelMilestone> = Gson().fromJson(json, type)
-
-        // 使用你的計算機初始化並取得精確數值
-        LevelCalculator.init(milestones)
-        currentPlayerStats = LevelCalculator.getStatsForLevel(level)
-
-        return currentPlayerStats
-    }
 
     override fun onResume() {
         super.onResume()

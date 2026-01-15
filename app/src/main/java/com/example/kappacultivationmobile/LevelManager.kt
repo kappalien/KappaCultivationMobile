@@ -1,56 +1,102 @@
-package com.example.kappacultivationmobile // 請確認這行與您的 package 名稱一致
+package com.example.kappacultivationmobile
 
-/**
- * LevelManager (等級管理器)
- * 專門負責計算經驗值、等級成長曲線、判斷是否升級
- */
+import android.util.Log
+import com.example.kappacultivationmobile.models.LevelMilestone
+
 class LevelManager {
 
-    // 使用 private set 保護數據，不讓外部隨意修改，只能透過 addExp 改變
+    // ===========================
+    // 1. 靜態資料區 (Companion Object)
+    // 這裡存放全域共用的數據，讓 AssetsInit 可以直接呼叫初始化
+    // ===========================
+    companion object {
+        private var milestones: List<LevelMilestone> = emptyList()
+
+        // 檢查是否已經初始化
+        val isInitialized: Boolean get() = milestones.isNotEmpty()
+
+        /**
+         * 由 AssetsInit 呼叫，載入靜態的里程碑數據
+         */
+        fun initStatsData(data: List<LevelMilestone>) {
+            if (data.isEmpty()) {
+                Log.e("LevelManager", "初始化失敗：傳入的數據列表為空")
+                return
+            }
+            milestones = data.sortedBy { it.level }
+            Log.d("LevelManager", "等級資料初始化成功，共載入 ${milestones.size} 筆數據")
+        }
+    }
+
+    // ===========================
+    // 2. 玩家狀態管理 (實體變數)
+    // 每個玩家/存檔獨有的狀態
+    // ===========================
+
     var currentLevel: Int = 1
         private set
 
     var currentExp: Long = 0
         private set
 
-    // 設定基礎經驗值 (第1級升第2級需要多少)
     private val baseExp: Long = 100
 
-    /**
-     * 取得當前等級升級所需的總經驗值
-     * 公式：100 * (2 的 (等級-1) 次方) -> 指數成長
-     * Level 1: 100
-     * Level 2: 200
-     * Level 3: 400
-     */
     fun getRequiredExp(): Long {
-        // 使用位元運算 (shl) 替代 Math.pow，效能更好且適合整數
-        // 注意：為了防止數值過大溢出，這裡使用 Long
         return baseExp * (1L shl (currentLevel - 1))
     }
 
-    /**
-     * 增加經驗值並處理升級邏輯
-     * @param amount 獲得的經驗量
-     * @return Boolean 如果有升級回傳 true，否則 false (方便 UI 彈出提示)
-     */
     fun addExp(amount: Long): Boolean {
         currentExp += amount
         var leveledUp = false
 
-        // 使用 while 迴圈，處理一次獲得大量經驗連升好幾級的情況
         while (currentExp >= getRequiredExp()) {
             currentExp -= getRequiredExp()
             currentLevel++
             leveledUp = true
         }
-
         return leveledUp
     }
 
-    // 如果您需要存檔功能，可以在這裡加一個 loadData(level: Int, exp: Long) 的方法
     fun loadData(savedLevel: Int, savedExp: Long) {
         currentLevel = savedLevel
         currentExp = savedExp
+    }
+
+    // ===========================
+    // 3. 計算邏輯
+    // 使用靜態的 milestones 進行計算
+    // ===========================
+
+    fun getStatsForLevel(targetLevel: Int): LevelMilestone {
+        if (!isInitialized) {
+            Log.e("LevelManager", "警告：LevelManager 尚未初始化數據 (AssetsInit 未執行或失敗)")
+            // 回傳保底數據避免崩潰
+            return LevelMilestone(1, 100, 50, 10, 5, 100, emptyList())
+        }
+
+        // 直接存取 companion object 中的 milestones
+        val lower = milestones.lastOrNull { it.level <= targetLevel } ?: milestones.first()
+        val upper = milestones.firstOrNull { it.level > targetLevel } ?: lower
+
+        if (lower.level == upper.level || lower.level == targetLevel) {
+            return lower.copy(level = targetLevel)
+        }
+
+        val range = (upper.level - lower.level).toDouble()
+        val progress = (targetLevel - lower.level) / range
+
+        return LevelMilestone(
+            level = targetLevel,
+            health = interpolate(lower.health, upper.health, progress),
+            mana = interpolate(lower.mana, upper.mana, progress),
+            attack = interpolate(lower.attack, upper.attack, progress),
+            defense = interpolate(lower.defense, upper.defense, progress),
+            nextLevelSteps = lower.nextLevelSteps,
+            skills = lower.skills
+        )
+    }
+
+    private fun interpolate(start: Int, end: Int, fraction: Double): Int {
+        return (start + (end - start) * fraction).toInt()
     }
 }

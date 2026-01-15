@@ -1,5 +1,6 @@
 package com.example.kappacultivationmobile
 
+import com.example.kappacultivationmobile.databinding.ActivityMainBinding
 import android.Manifest
 import android.util.Log
 import android.text.Html
@@ -16,15 +17,11 @@ import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import android.view.MotionEvent
-import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -36,8 +33,6 @@ import java.lang.reflect.Type
 import com.example.kappacultivationmobile.models.Enemy
 import com.example.kappacultivationmobile.battle.BattleActivity
 import com.example.kappacultivationmobile.models.LevelMilestone
-import com.example.kappacultivationmobile.EnemyManager
-import com.example.kappacultivationmobile.LevelCalculator
 
 
 inline fun <reified T> typeToken() = object : TypeToken<T>() {}
@@ -47,36 +42,36 @@ enum class WeatherType {
 }
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mapView: MapView
+    private lateinit var binding: ActivityMainBinding
+
+    //  系統服務變數
     private lateinit var locationManager: LocationManager
-    private lateinit var sensorManager: SensorManager
     private lateinit var locationListener: android.location.LocationListener
-    private var isTrackingLocation = false
+    private lateinit var sensorManager: SensorManager
+    private var stepCounterSensor: Sensor? = null //  步數管理
 
-    private var stepCounterSensor: Sensor? = null
+    //  邏輯管理變數
     private lateinit var stepCounterHelper: StepCounterHelper
-
     private val levelManager = LevelManager()   // 等級管理
+    private lateinit var achievementManager: AchievementManager //  成就管理
+    private lateinit var backpack: Backpack // 背包管理
 
-    // 天氣
+    // 狀態紀錄與角色回應變數
+    private lateinit var characterResponse: CharacterResponse
+    private lateinit var sharedPreferences: SharedPreferences
+
+    // 天氣邏輯變數
     private var currentWeather: WeatherType? = null
     private lateinit var rainEffectManager: RainEffectManager // 天氣管理 (下雨)
     private lateinit var snowEffectManager: SnowEffectManager // 天氣管理 (下雪)
     private val weatherHandler = android.os.Handler(Looper.getMainLooper())
     private lateinit var weatherRunnable: Runnable
 
-    private lateinit var achievementManager: AchievementManager //  成就管理
-
-    private lateinit var staticBackground: ImageView    // 背景
-    private lateinit var tvStatus: TextView // 等級資訊
-    private lateinit var petStatusTextView: TextView    //狀態資訊
-    private lateinit var marketIcon: ImageView //  商城圖示
-    private lateinit var characterImage: ImageView  // 角色
-
-    private val levelMilestones = listOf(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    // 數據狀態變數
     private var enemies: MutableList<Enemy> = mutableListOf()
-
     private var isNavigatingToOtherActivity = false // 是否正在導航到其他 Activity
+    private var isTrackingLocation = false
+    private lateinit var currentPlayerStats: LevelMilestone
 
     // 角色用圖片
     private val characterImages = mapOf(
@@ -111,31 +106,19 @@ class MainActivity : AppCompatActivity() {
     private var currentRotationY = 0f
     private val minRotationY = -25f // 允許向左旋轉的最大角度
     private val maxRotationY = 25f  // 允許向右旋轉的最大角度
-
-    private lateinit var characterInfo: TextView
-    private lateinit var characterResponseTextView: TextView
-    private lateinit var characterResponse: CharacterResponse
-    private lateinit var sharedPreferences: SharedPreferences
-
     private val REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 1
     private val REQUEST_LOCATION_PERMISSION = 2
-
-    private lateinit var currentPlayerStats: LevelMilestone
-
 
     // 互動功能
     private lateinit var petStatus: PetStatus
     private lateinit var petActions: PetActions
     private lateinit var petUpdateManager: PetUpdateManager
     private lateinit var randomEventManager: RandomEventManager
-    private lateinit var eventNotificationTextView: TextView
 
     // 遭遇
     private lateinit var herbs: List<Item>
     private lateinit var treasures: List<Item>
 
-    // 背包
-    private lateinit var backpack: Backpack // 背包管理
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,8 +127,9 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // 設定 Activity 的 Layout
-        setContentView(R.layout.activity_main)
+        // 初始化 ViewBinding
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         sharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
@@ -171,35 +155,25 @@ class MainActivity : AppCompatActivity() {
 
         // 設定 OpenStreetMap 配置
         Configuration.getInstance().userAgentValue = packageName
-
-        staticBackground = findViewById(R.id.staticBackground)
-
-        // 檢查是否要顯示 OSM 地圖
-        mapView = findViewById(R.id.mapView)
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
+        binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
+        binding.mapView.setMultiTouchControls(true)
 
         if (showOSM) {
-            mapView.visibility = View.VISIBLE
-            staticBackground.visibility = View.GONE
+            binding.mapView.visibility = View.VISIBLE
+            binding.staticBackground.visibility = View.GONE
         } else {
-            mapView.visibility = View.GONE
-            staticBackground.visibility = View.VISIBLE
+            binding.mapView.visibility = View.GONE
+            binding.staticBackground.visibility = View.VISIBLE
         }
-
-        // 預設背景
-        staticBackground.setImageResource(R.drawable.background_day)
+        binding.staticBackground.setImageResource(R.drawable.background_day)    // 預設背景
 
         // 天氣系統
-        val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
-        val buttonArea = findViewById<View>(R.id.main_button_layout)
-
-        rainEffectManager = RainEffectManager(this, weatherLayer)   // 初始化
-        snowEffectManager = SnowEffectManager(this, weatherLayer)
+        rainEffectManager = RainEffectManager(this, binding.weatherLayer)
+        snowEffectManager = SnowEffectManager(this, binding.weatherLayer)
 
         // 啟動天氣輪替（立刻執行一次 + 每 1 分鐘切換）
-        buttonArea.post {
-            changeWeather() // 第一次天氣設定，等佈局完成後再執行
+        binding.mainButtonLayout.post {
+            changeWeather() // 第一次天氣設定
             weatherRunnable = object : Runnable {
                 override fun run() {
                     changeWeather()
@@ -209,91 +183,57 @@ class MainActivity : AppCompatActivity() {
             weatherHandler.postDelayed(weatherRunnable, 5 * 60 * 1000)
         }
 
-        // 互動按鈕
-        val btnFeed = findViewById<Button>(R.id.button_feed)
-        val btnPlay = findViewById<Button>(R.id.button_play)
-        val btnClean = findViewById<Button>(R.id.button_clean)
-        val btnInteract = findViewById<Button>(R.id.button_interact) // 仍然需要找到主按鈕
+        //  互動按鈕群組
+        val interactButtons = listOf(binding.buttonFeed, binding.buttonPlay, binding.buttonClean)
+        val exploreButtons = listOf(binding.buttonExploreOut, binding.buttonExploreChallenge)
 
-        // 探險按鈕
-        val btnExplore = findViewById<Button>(R.id.button_explore)
-        val btnExploreOut = findViewById<Button>(R.id.button_explore_out)
-        val btnExploreChallenge = findViewById<Button>(R.id.button_explore_challenge)
-
-        // 初始隱藏 探險的子功能按鍵
-        val interactButtons = listOf(btnFeed, btnPlay, btnClean) // 原本的互動子按鈕
-        val exploreButtons = listOf(btnExploreOut, btnExploreChallenge) // 新增的探險子按鈕
-
-        // 初始隱藏 互動的子功能按鍵
+        // 初始隱藏
         interactButtons.forEach { it.visibility = View.GONE }
-        exploreButtons.forEach { it.visibility = View.GONE } // 初始隱藏 探險的子功能按鍵
+        exploreButtons.forEach { it.visibility = View.GONE }
 
         // 探險主按鈕點擊事件：展開/收合
-        btnExplore.setOnClickListener {
-            // 1. 判斷是否要展開探險子按鈕
-            val newVisibility = if (btnExploreOut.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-
-            // 2. 隱藏互動的子按鈕群組 (新增的邏輯)
+        binding.buttonExplore.setOnClickListener {
+            val newVisibility = if (binding.buttonExploreOut.visibility == View.VISIBLE) View.GONE else View.VISIBLE
             interactButtons.forEach { it.visibility = View.GONE }
-
-            // 3. 執行探險子按鈕的顯示/隱藏操作
             exploreButtons.forEach { it.visibility = newVisibility }
 
-            // (可選) 讓子按鈕在點擊時顯示在最上層
             if (newVisibility == View.VISIBLE) {
-                findViewById<View>(R.id.explore_group).bringToFront()
+                binding.exploreGroup.bringToFront() // 使用 binding.exploreGroup
             }
         }
 
         // 互動主按鈕點擊事件：展開/收合
-        btnInteract.setOnClickListener {
-            // 1. 判斷是否要展開互動子按鈕
-            val newVisibility = if (btnFeed.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-
-            // 2. 隱藏探險的子按鈕群組 (新增的邏輯)
+        binding.buttonInteract.setOnClickListener {
+            val newVisibility = if (binding.buttonFeed.visibility == View.VISIBLE) View.GONE else View.VISIBLE
             exploreButtons.forEach { it.visibility = View.GONE }
-
-            // 3. 對所有的互動子按鈕執行顯示/隱藏操作
             interactButtons.forEach { it.visibility = newVisibility }
 
-            // (可選) 讓子按鈕在點擊時顯示在最上層
             if (newVisibility == View.VISIBLE) {
-                findViewById<View>(R.id.interact_group).bringToFront()
+                binding.interactGroup.bringToFront() // 使用 binding.interactGroup
             }
         }
 
-        val btnAchievement = findViewById<Button>(R.id.button_achievements) // 宣告一個變數 btnAchievement，並透過 R.id.button_achievements 找到 XML 佈局中「成就」按鈕元件
-        val btnBackpack = findViewById<Button>(R.id.button_backpack)       // 宣告 btnBackpack，並找到 XML 中「背包」按鈕元件
-        val btnSettings = findViewById<Button>(R.id.buttonSettings)         // 宣告 btnSettings，並找到 XML 中「設定」按鈕元件
-
-        // 為「成就」按鈕設定點擊事件監聽器
-        btnAchievement.setOnClickListener {
-            isNavigatingToOtherActivity = true // 設定標記，表示 App 正在切換畫面 (避免背景音樂被誤判為退到後台而暫停)
-
-            // 啟動 AchievementsActivity 畫面
-            // Intent 用來指定要從當前 Activity (this) 切換到 AchievementsActivity 類別所代表的畫面
+        // 成就主按鈕點擊事件：展開/收合
+        binding.buttonAchievements.setOnClickListener {
+            isNavigatingToOtherActivity = true
             startActivity(Intent(this, AchievementsActivity::class.java))
         }
 
-        // 設定按鈕
-        val settingsButton: Button = findViewById(R.id.buttonSettings)
-        settingsButton.setOnClickListener {
+        binding.buttonBackpack.setOnClickListener {
             isNavigatingToOtherActivity = true
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, BackpackTabbedActivity::class.java))
         }
 
-        // 初始化 UI 元件
-        mapView = findViewById(R.id.mapView)
-        tvStatus = findViewById(R.id.tv_status) // 等級資訊
-        characterImage = findViewById(R.id.character_image) // 角色圖片
-
+        binding.buttonSettings.setOnClickListener {
+            isNavigatingToOtherActivity = true
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         // 角色定時動畫
         animationHandler.postDelayed(animationRunnable, 3000)
 
-        // 處理角色旋轉事件
-        characterImage.setOnTouchListener { view, event ->
+        // 處理角色觸碰旋轉事件
+        binding.characterImage.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     touchStartX = event.x
@@ -319,7 +259,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    // 處理點擊事件 (如果需要)
                     if (Math.abs(event.x - touchStartX) <= 30) {
                         view.performClick()
                     }
@@ -331,7 +270,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 處理角色點擊事件
-        characterImage.setOnClickListener {
+        binding.characterImage.setOnClickListener {
             val message = when {
                 petStatus.hunger < 50 -> "我好餓...快餵我！🍖"
                 petStatus.cleanliness < 50 -> "我需要洗澡啦！🛁"
@@ -357,46 +296,41 @@ class MainActivity : AppCompatActivity() {
                     "我想睡覺了啦..."
                 ).random()
             }
-            characterResponseTextView.text = message
-            characterResponseTextView.visibility = View.VISIBLE
-            characterResponseTextView.postDelayed({
-                characterResponseTextView.visibility = View.GONE
+            binding.characterResponse.text = message
+            binding.characterResponse.visibility = View.VISIBLE
+            binding.characterResponse.postDelayed({
+                binding.characterResponse.visibility = View.GONE
             }, 4000)
         }
 
-        characterInfo = findViewById(R.id.character_info)   // 角色資訊
-        characterResponseTextView = findViewById(R.id.character_response)   // 角色回應
-
+        // 初始化 locationListener
         // 初始化 locationListener
         locationListener = object : android.location.LocationListener {
             override fun onLocationChanged(location: Location) {
                 val newGeoPoint = GeoPoint(location.latitude, location.longitude)
-                mapView.controller.setCenter(newGeoPoint) // 更新地圖中心
-                mapView.overlays.clear() // 清除舊的標記，避免重複顯示
-
-                val marker = Marker(mapView)
+                // 使用 binding.mapView
+                binding.mapView.controller.setCenter(newGeoPoint)
+                binding.mapView.overlays.clear()
+                val marker = Marker(binding.mapView)
                 marker.position = newGeoPoint
                 marker.title = "你在這裡！"
-                mapView.overlays.add(marker)
-
+                binding.mapView.overlays.add(marker)
                 Log.d("GPS Update", "位置更新: ${location.latitude}, ${location.longitude}")
             }
-
             // 從 JSON 檔案中讀取背包的物品資料，並將讀取到的資料儲存到 Backpack 類別的 items 映射中
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
             override fun onProviderEnabled(provider: String) {}
             override fun onProviderDisabled(provider: String) {}
         }
 
-        // 讀取 SharedPreferences 存儲的數據
-        val savedSteps = sharedPreferences.getInt("currentStepsInLevel", 0) // 預設為 0
-        val savedLevel = sharedPreferences.getInt("currentLevel", 1) // 預設等級 1
+        // 讀取數據與初始化 LevelManager
+        val savedSteps = sharedPreferences.getInt("currentStepsInLevel", 0)
+        val savedLevel = sharedPreferences.getInt("currentLevel", 1)
+        val savedExp = sharedPreferences.getLong("currentExp", 0L)
+        levelManager.loadData(savedLevel, savedExp)
 
-        tvStatus.text = getString(R.string.level_and_steps, savedLevel, savedSteps) // 讀取最後一次的累加數值
-
-        petStatusTextView = findViewById(R.id.tv_pet_status) // 讀取狀態
-
-
+        // 使用 binding.tvStatus
+        binding.tvStatus.text = getString(R.string.level_and_steps, savedLevel, savedSteps)
 
         // 初始化角色回應
         characterResponse = CharacterResponse()
@@ -404,48 +338,39 @@ class MainActivity : AppCompatActivity() {
         // ✅ 電子雞系統初始化
         petStatus = PetStatus()
         petActions = PetActions(petStatus)
-        petUpdateManager = PetUpdateManager(petStatus) { updateUI() }
+        petUpdateManager = PetUpdateManager(petStatus) { updateUI() } // updateUI 會用到 binding
 
         // 初始化 StepCounterHelper
         stepCounterHelper = StepCounterHelper(
-            savedSteps,
-            savedLevel,
             { steps, level, response ->
                 runOnUiThread {
-                    tvStatus.text = getString(R.string.level_and_steps, level, steps)
-                    Log.d("CharacterResponse", "更新 UI：$response")
-
-                    characterResponseTextView.removeCallbacks(null)
+                    binding.tvStatus.text = getString(R.string.level_and_steps, level, steps)
+                    binding.characterResponse.removeCallbacks(null)
 
                     if (response.isNotEmpty()) {
-                        characterResponseTextView.text = response
-                        characterResponseTextView.visibility = View.VISIBLE
-
-                        characterResponseTextView.postDelayed({
-                            if (characterResponseTextView.text == response) {
-                                characterResponseTextView.visibility = View.GONE
+                        binding.characterResponse.text = response
+                        binding.characterResponse.visibility = View.VISIBLE
+                        binding.characterResponse.postDelayed({
+                            if (binding.characterResponse.text == response) {
+                                binding.characterResponse.visibility = View.GONE
                             }
                         }, 6000)
                     } else {
-                        characterResponseTextView.visibility = View.GONE
+                        binding.characterResponse.visibility = View.GONE
                     }
-
                     updateCharacterInfo()
                 }
             },
-            levelMilestones,
+            levelManager,
             sharedPreferences,
             characterResponse,
-            30, // 每 30 步觸發對話機率（可自訂）
-            petStatus // ✅ 傳入目前的電子雞狀態
+            30,
+            petStatus
         )
 
         // 初始化成就管理
         achievementManager = AchievementManager(this)
 
-        // 設定地圖
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
 
         // 是否開啟 GPS 定位
         if (gpsEnabled) {
@@ -472,25 +397,19 @@ class MainActivity : AppCompatActivity() {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
-        // ✅ 綁定 UI 按鈕
         //商城頁面入口圖示邏輯
-        marketIcon = findViewById(R.id.market_icon) // 商城圖示
-        marketIcon.setOnClickListener {
+        binding.marketIcon.setOnClickListener {
             isNavigatingToOtherActivity = true
-            val intent = Intent(this, MarketActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MarketActivity::class.java))
         }
 
-        // 穿戴頁面入口圖示邏輯 (請確保您的 Activity 名稱是 EquipmentActivity)
-        val equipmentIcon: ImageView = findViewById(R.id.equipment_icon)
-        equipmentIcon.setOnClickListener {
-            // 顯示「開發中」提示訊息
+        // 穿戴頁面入口圖示邏輯
+        binding.equipmentIcon.setOnClickListener {
             Toast.makeText(this, "裝備穿戴頁面 - 開發中...", Toast.LENGTH_SHORT).show()
         }
 
         // 餵食按鈕邏輯
-        // 餵食按鈕邏輯
-        findViewById<Button>(R.id.button_feed).setOnClickListener {
+        binding.buttonFeed.setOnClickListener {
             // 1. 執行寵物基礎動作 (飢餓度等)
             petActions.feed()
 
@@ -518,7 +437,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 娛樂按鈕邏輯
-        findViewById<Button>(R.id.button_play).setOnClickListener {
+        binding.buttonPlay.setOnClickListener {
             petActions.play()
             updateUI()
 
@@ -528,7 +447,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 清潔按鈕邏輯
-        findViewById<Button>(R.id.button_clean).setOnClickListener {
+        binding.buttonClean.setOnClickListener {
             petActions.clean()
             updateUI()
 
@@ -537,7 +456,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 外出按鈕邏輯
-        btnExploreOut.setOnClickListener {
+        binding.buttonExploreOut.setOnClickListener {
             // 💡 外出功能：可設定為啟動或停止 GPS/步數追蹤，或清除地圖標記等
             Toast.makeText(this, "你開始外出探險了！", Toast.LENGTH_SHORT).show()
 
@@ -545,7 +464,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 挑戰按鈕邏輯
-        btnExploreChallenge.setOnClickListener {
+        binding.buttonExploreChallenge.setOnClickListener {
             // 💡 挑戰功能：可設定為立即觸發一次隨機事件，或進入一個戰鬥列表介面
             Toast.makeText(this, "你決定挑戰強敵！", Toast.LENGTH_SHORT).show()
 
@@ -567,16 +486,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 隨機事件
-        eventNotificationTextView = findViewById(R.id.tv_event_notification)
-
         randomEventManager = RandomEventManager { event ->
             runOnUiThread {
-                eventNotificationTextView.text = event
-                eventNotificationTextView.visibility = View.VISIBLE
+                binding.tvEventNotification.text = event
+                binding.tvEventNotification.visibility = View.VISIBLE
             }
         }
-
-        eventNotificationTextView.setOnClickListener {
+        binding.tvEventNotification.setOnClickListener {
             showEventList()
         }
 
@@ -584,12 +500,6 @@ class MainActivity : AppCompatActivity() {
 
         // **初始化背包**
         backpack = Backpack(this)
-
-        // 設定 "打開背包" 按鈕
-        findViewById<Button>(R.id.button_backpack).setOnClickListener {
-            isNavigatingToOtherActivity = true
-            startActivity(Intent(this, BackpackTabbedActivity::class.java))
-        }
 
         // 檢查裝置是否支援 TYPE_STEP_COUNTER
         val hasStepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
@@ -610,9 +520,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         isNavigatingToOtherActivity = false
 
-        if (::mapView.isInitialized) {
-            mapView.onResume()
-        }
+        binding.mapView.onResume()
 
         // ✅ 根據使用者是否允許背景步數計算來判斷是否啟用感應器
         val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
@@ -671,20 +579,18 @@ class MainActivity : AppCompatActivity() {
         val gpsEnabled = sharedPreferences.getBoolean("gpsEnabled", false)
 
         if (showOSM) {
-            mapView.visibility = View.VISIBLE
-            staticBackground.visibility = View.GONE
+            binding.mapView.visibility = View.VISIBLE
+            binding.staticBackground.visibility = View.GONE
 
-            // ✅ 加入這段，等 MapView layout 完成後再設置中心與縮放
-            mapView.post {
-                val defaultPoint = GeoPoint(25.0330, 121.5654) // 台北 101
-                mapView.controller.setCenter(defaultPoint)
-                mapView.controller.setZoom(18.0)
-                Log.d("OSM_TEST", "首次顯示時 setCenter & setZoom")
+            // ✅ 使用 binding.mapView
+            binding.mapView.post {
+                val defaultPoint = GeoPoint(25.0330, 121.5654)
+                binding.mapView.controller.setCenter(defaultPoint)
+                binding.mapView.controller.setZoom(18.0)
             }
-
         } else {
-            mapView.visibility = View.GONE
-            staticBackground.visibility = View.VISIBLE
+            binding.mapView.visibility = View.GONE
+            binding.staticBackground.visibility = View.VISIBLE
         }
 
         // 檢查 GPS 設定
@@ -705,9 +611,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (::mapView.isInitialized) {
-            mapView.onPause()   // 停止地圖更新，減少背景運行
-        }
+        binding.mapView.onPause()
 
         // ✅ 依據使用者設定決定是否停止步數計算
         val backgroundStepsEnabled = sharedPreferences.getBoolean("backgroundSteps", true)
@@ -741,7 +645,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // 1. 移除所有計時器，防止記憶體洩漏
+        weatherHandler.removeCallbacksAndMessages(null)
+        animationHandler.removeCallbacksAndMessages(null)
+        binding.characterResponse.removeCallbacks(null)
+
+        // 2. 停止音樂
         BgmManager.stop()
+
+        // 3. 強制取消註冊步數感應器
+        if (::sensorManager.isInitialized && stepCounterSensor != null) {
+            try {
+                sensorManager.unregisterListener(stepCounterHelper)
+                Log.d("StepDestroy", "Activity 銷毀，強制移除步數監聽器")
+            } catch (e: Exception) {
+                Log.e("StepDestroy", "移除監聽器失敗: ${e.message}")
+            }
+        }
     }
 
     // 遭遇戰鬥
@@ -757,38 +677,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun changeWeather() {
-        // 先清除目前天氣
+        // 1. 停止舊天氣
         rainEffectManager.stopRain()
         snowEffectManager.stopSnow()
 
-        val weatherLayer = findViewById<ViewGroup>(R.id.weather_layer)
-        val buttonArea = findViewById<View>(R.id.main_button_layout)
-
-        when ((1..3).random()) {
-            1 -> {
-                Log.d("WeatherSystem", "☀️ 晴天")
+        // 2. 隨機切換
+        when ((1..4).random()) {
+            1 -> { // 晴天
                 currentWeather = WeatherType.SUNNY
-                staticBackground.setImageResource(R.drawable.background_sunny)
+                binding.staticBackground.setImageResource(R.drawable.background_sunny)
             }
-            2 -> {
-                Log.d("WeatherSystem", "🌧️ 雨天")
+            2 -> { // 雨天
                 currentWeather = WeatherType.RAINY
-                staticBackground.setImageResource(R.drawable.background_rainy)
-                rainEffectManager.rainTargetY = buttonArea.top.toFloat() - 70f
-                rainEffectManager.splashY = buttonArea.top.toFloat() - 70f
+                binding.staticBackground.setImageResource(R.drawable.background_rainy)
+
+                // ✅ 使用 binding.mainButtonLayout 取得位置
+                val targetY = binding.mainButtonLayout.top.toFloat() - 70f
+
+                rainEffectManager.rainTargetY = targetY
+                rainEffectManager.splashY = targetY
                 rainEffectManager.startRain(dropCount = 40, angle = 10f)
             }
-            3 -> {
-                Log.d("WeatherSystem", "❄️ 下雪")
+            3 -> { // 下雪
                 currentWeather = WeatherType.SNOWY
-                staticBackground.setImageResource(R.drawable.background_snowy)
-                snowEffectManager.snowTargetY = buttonArea.top.toFloat() - 70f
+                binding.staticBackground.setImageResource(R.drawable.background_snowy)
+
+                val targetY = binding.mainButtonLayout.top.toFloat() - 70f
+                snowEffectManager.snowTargetY = targetY
                 snowEffectManager.startSnow()
             }
-            4 -> {
-                Log.d("WeatherSystem", "一般")
+            4 -> { // 一般
                 currentWeather = WeatherType.NORNAML
-                staticBackground.setImageResource(R.drawable.background_day)
+                binding.staticBackground.setImageResource(R.drawable.background_day)
             }
         }
     }
@@ -796,10 +716,15 @@ class MainActivity : AppCompatActivity() {
     private fun updateCharacterInfo() {
         val savedLevel = sharedPreferences.getInt("currentLevel", 1)
 
-        // 使用計算機取得精確數值
-        val stats = LevelCalculator.getStatsForLevel(savedLevel)
-        currentPlayerStats = stats // 更新當前狀態
+        // 確保 LevelManager 狀態同步 (防止在其他地方修改了 Prefs 但 Manager 沒更新)
+        if (levelManager.currentLevel != savedLevel) {
+            val savedExp = sharedPreferences.getLong("currentExp", 0L)
+            levelManager.loadData(savedLevel, savedExp)
+        }
 
+        // 使用 LevelManager 取得數值(LevelManager.kt)
+        val stats = levelManager.getStatsForLevel(savedLevel)
+        currentPlayerStats = stats
         val currentGold = sharedPreferences.getInt("player_gold", 0)
         val currentHp = sharedPreferences.getInt("currentHp", stats.health)
 
@@ -819,14 +744,14 @@ class MainActivity : AppCompatActivity() {
             金幣: $currentGold
         """.trimIndent()
 
-        characterInfo.setText(
+        binding.characterInfo.setText(
             Html.fromHtml(characterInfoText, Html.FROM_HTML_MODE_LEGACY),
             TextView.BufferType.SPANNABLE
         )
     }
 
     private fun updateUI() {
-        petStatusTextView.text = getString(
+        binding.tvPetStatus.text = getString(
             R.string.pet_status,
             petStatus.energy,
             petStatus.hunger,
@@ -851,7 +776,7 @@ class MainActivity : AppCompatActivity() {
 
         // ✅ 血量低於 70%，優先顯示「受傷」圖片
         if (currentHp < currentPlayerStats.health * 0.7) {
-            characterImage.setImageResource(R.drawable.emoji_injured)
+            binding.characterImage.setImageResource(R.drawable.emoji_injured)
             return
         }
 
@@ -862,14 +787,15 @@ class MainActivity : AppCompatActivity() {
             petStatus.hunger < 70 -> characterImageKey = "hungry"
             petStatus.energy < 75 -> characterImageKey = "tired"
             petStatus.mood < 60 -> characterImageKey = "mood"
+
             // 如果狀態都很平均且不錯，隨機顯示正常圖片
             (petStatus.hunger + petStatus.energy + petStatus.cleanliness + petStatus.mood) / 4 >= 90 -> {
                 val normalVariants = listOf(R.drawable.emoji_normal_1, R.drawable.emoji_normal_2, R.drawable.emoji_normal_3)
-                characterImage.setImageResource(normalVariants.random())
+                binding.characterImage.setImageResource(normalVariants.random())
                 return
             }
         }
-        characterImage.setImageResource(characterImages[characterImageKey] ?: R.drawable.emoji_happy)
+        binding.characterImage.setImageResource(characterImages[characterImageKey] ?: R.drawable.emoji_happy)
 
         // 取得各狀態 (成就系統需要)
         val gameState = GameState(
@@ -899,12 +825,12 @@ class MainActivity : AppCompatActivity() {
             val jumpHeight = 60f
             val animationDuration = 700L
 
-            characterImage.animate()
+            binding.characterImage.animate()
                 .translationYBy(-jumpHeight)
                 .setDuration(animationDuration / 2)
                 .setInterpolator(AccelerateDecelerateInterpolator()) // 加速減速
                 .withEndAction {
-                    characterImage.animate()
+                    binding.characterImage.animate()
                         .translationY(0f)
                         .setDuration(animationDuration / 2)
                         .setInterpolator(AccelerateDecelerateInterpolator())
@@ -916,15 +842,15 @@ class MainActivity : AppCompatActivity() {
             // 旋轉動畫
             val randomRotation = random.nextFloat() * maxRotationAngle * 2 - maxRotationAngle
             val animationDuration = 700L  // 減少持續時間
-            characterImage.animate()
+            binding.characterImage.animate()
                 .rotationBy(randomRotation)
                 .setDuration(animationDuration)
                 .withEndAction {
-                    characterImage.animate()
+                    binding.characterImage.animate()
                         .rotationBy(-randomRotation)
                         .setDuration(animationDuration)
                         .withEndAction {
-                            characterImage.animate()
+                            binding.characterImage.animate()
                                 .rotation(0f)
                                 .setDuration(animationDuration / 2)
                                 .withEndAction { isAnimating = false }
@@ -970,7 +896,7 @@ class MainActivity : AppCompatActivity() {
         randomEventManager.removeEvent(event)
 
         if (randomEventManager.getEvents().isEmpty()) {
-            eventNotificationTextView.visibility = View.GONE
+            binding.tvEventNotification.visibility = View.GONE
         }
     }
 
@@ -1043,18 +969,17 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     GeoPoint(25.0330, 121.5654) // 預設台北 101
                 }
-
-                mapView.controller.setCenter(startPoint)
-                mapView.setMultiTouchControls(true) // 啟用手勢縮放
-                mapView.controller.setZoom(18.0)
+                binding.mapView.controller.setCenter(startPoint)
+                binding.mapView.setMultiTouchControls(true) // 啟用手勢縮放
+                binding.mapView.controller.setZoom(18.0)
 
                 // 移除舊的標記，避免重複顯示
-                mapView.overlays.clear()
+                binding.mapView.overlays.clear()
 
-                val marker = Marker(mapView)
+                val marker = Marker(binding.mapView)
                 marker.position = startPoint
                 marker.title = "你在這裡！"
-                mapView.overlays.add(marker)
+                binding.mapView.overlays.add(marker)
 
                 // **開始監聽 GPS 變化**
                 if (!isTrackingLocation) {
@@ -1093,8 +1018,6 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
                 REQUEST_ACTIVITY_RECOGNITION_PERMISSION
             )
-        } else {
-            startStepCounter()
         }
     }
 
@@ -1123,9 +1046,11 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_ACTIVITY_RECOGNITION_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startStepCounter()
+                // 這裡不需要呼叫 startStepCounter()，因為系統關閉權限視窗後會觸發 onResume
+                Log.d("PermissionCheck", "使用者剛授權步數權限，等待 onResume 啟動感應器")
             } else {
                 Log.w("Permissions", "使用者拒絕了步數偵測權限")
+                // 這裡可以考慮跳出一個 Dialog 告訴使用者：沒有權限就不能孵蛋喔
             }
         }
     }
