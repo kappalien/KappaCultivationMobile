@@ -7,7 +7,7 @@ data class LevelMilestone(
     val attack: Int,
     val defense: Int,
     val nextLevelSteps: Int,
-    val skills: List<Skill>
+    val skills: List<Skill> = emptyList()
 )
 
 data class Skill(

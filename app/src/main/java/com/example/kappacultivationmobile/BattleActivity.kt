@@ -25,6 +25,7 @@ enum class BattleState {
     PLAYER_TURN_START,  // 玩家回合開始 (選擇行動)
     PLAYER_MOVING,      // 玩家選擇移動目的地
     PLAYER_ATTACKING,   // 玩家選擇攻擊目標
+    PLAYER_SKILL_SELECTION,   // 玩家技能
     ENEMY_TURN,         // 敵人回合
     BATTLE_END          // 戰鬥結束 (勝利/失敗)
 }
@@ -40,9 +41,12 @@ class BattleActivity : AppCompatActivity() {
     private lateinit var battleLogTextView: TextView
     private lateinit var playerHpTextView: TextView
     private lateinit var playerHpBar: ProgressBar
-    private lateinit var actionMenuLayout: ConstraintLayout
+    private lateinit var playerMpTextView: TextView
+    private lateinit var playerMpBar: ProgressBar
+    private lateinit var actionMenuLayout: View
     private lateinit var moveButton: ImageButton
     private lateinit var attackButton: ImageButton
+    private lateinit var skillButton: ImageButton
     private lateinit var endTurnButton: ImageButton
     private lateinit var escapeButton: ImageButton
     private lateinit var enemyStatusSummary: TextView
@@ -96,11 +100,11 @@ class BattleActivity : AppCompatActivity() {
         // ✅ 修改處：使用 LevelManager 取得玩家數值
         currentPlayerStats = levelManager.getStatsForLevel(playerLevel)
 
-        // 2. 更新血量邏輯
+        // 2. 更新HP邏輯
         // 注意：現在是用 currentPlayerStats.health 而非 playerInfo.health
         currentPlayerHp = sharedPreferences.getInt("currentHp", currentPlayerStats.health)
 
-        // 3. (選用) 如果你有 MP 需求，也可以在這裡初始化
+        // 3. 更新MP邏輯
         currentPlayerMp = sharedPreferences.getInt("currentMp", currentPlayerStats.mana)
 
         // 播放 BGM
@@ -112,14 +116,17 @@ class BattleActivity : AppCompatActivity() {
         battleLogTextView = findViewById(R.id.battleLogTextView)
         playerHpTextView = findViewById(R.id.playerHpTextView)
         playerHpBar = findViewById(R.id.playerHpBar)
+        playerMpTextView = findViewById(R.id.playerMpTextView)
+        playerMpBar = findViewById(R.id.playerMpBar)
         actionMenuLayout = findViewById(R.id.actionMenuLayout)
         moveButton = findViewById(R.id.moveButton)
         attackButton = findViewById(R.id.attackButton)
+        skillButton = findViewById(R.id.skillButton)
         endTurnButton = findViewById(R.id.endTurnButton)
         escapeButton = findViewById(R.id.escapeButton)
         enemyStatusSummary = findViewById(R.id.enemyStatusSummary)
 
-        updateHealthUI()
+        updateStatusUI()
     }
 
     // 棋盤列數並初始化 Engine
@@ -165,6 +172,28 @@ class BattleActivity : AppCompatActivity() {
             }
         }
 
+        // 技能按鈕點擊
+        skillButton.setOnClickListener {
+            actionMenuLayout.visibility = View.GONE
+            if (currentState == BattleState.PLAYER_TURN_START) {
+
+                // 檢查是否有技能 (防呆)
+                if (currentPlayerStats.skills.isEmpty()) {
+                    updateBattleLog("你還沒有學會任何技能！")
+                    // 重新顯示選單
+                    actionMenuLayout.visibility = View.VISIBLE
+                    return@setOnClickListener
+                }
+
+                currentState = BattleState.PLAYER_SKILL_SELECTION
+                updateBattleLog("請選擇技能施放目標。")
+
+                // TODO: 如果技能有特定範圍，這裡應該呼叫 showSkillRange()
+                // 目前先假設範圍跟攻擊一樣是 1 格
+                // updateUIForTurn()
+            }
+        }
+
         endTurnButton.setOnClickListener {
             if (currentState == BattleState.PLAYER_TURN_START) {
                 // 結束玩家回合，進入敵人回合
@@ -186,11 +215,11 @@ class BattleActivity : AppCompatActivity() {
 
         // ✅ 如果玩家正在選擇目標，但又點擊了「自己」所在的格子，則視為取消並重開選單
         if (cell.type == CellType.PLAYER &&
-            (currentState == BattleState.PLAYER_ATTACKING || currentState == BattleState.PLAYER_MOVING)) {
-
+            (currentState == BattleState.PLAYER_ATTACKING ||
+                    currentState == BattleState.PLAYER_MOVING ||
+                    currentState == BattleState.PLAYER_SKILL_SELECTION)) {
             currentState = BattleState.PLAYER_TURN_START
-            showActionMenuAtTile(position) // 重新叫出選單
-            updateBattleLog("已取消動作，請重新選擇")
+            showActionMenuAtTile(position)
             return
         }
 
@@ -215,6 +244,14 @@ class BattleActivity : AppCompatActivity() {
                     handleAttackAction(position)
                 } else {
                     updateBattleLog("請選擇一個敵人進行攻擊。")
+                }
+            }
+            BattleState.PLAYER_SKILL_SELECTION -> {
+                if (cell.type == CellType.ENEMY) {
+                    // 這裡呼叫釋放技能的邏輯
+                    handleSkillAction(position)
+                } else {
+                    updateBattleLog("請選擇一個敵人作為技能目標。")
                 }
             }
             else -> {
@@ -262,38 +299,72 @@ class BattleActivity : AppCompatActivity() {
     // 處理攻擊動作
     private fun handleAttackAction(enemyPosition: Int) {
         actionMenuLayout.visibility = View.GONE
-        val cell = adapter.boardData[enemyPosition]
-        val enemy = cell.enemy ?: return
 
-        // 1. 更新敵人血量 (假設 Enemy 有 currentHp 變數)
-        val currentAtk = currentPlayerStats.attack
+        // ✅ 呼叫 Engine 處理邏輯，Activity 只負責顯示結果
+        val result = BattleEngine.performPlayerAttack(enemyPosition, currentPlayerStats)
 
-        // B. 取得目前要使用的技能 (暫時先預設使用第一個技能，後續可以做技能選單)
-        val activeSkill = currentPlayerStats.skills[0]
+        if (result != null) {
+            // 1. 刷新格子顯示 (血條變化/敵人消失)
+            adapter.notifyItemChanged(enemyPosition)
 
-        // C. 基礎傷害 = 玩家當前攻擊力 * 技能倍率
-        val baseDamage = currentAtk * activeSkill.multiplier
+            // 2. 顯示 Log
+            updateBattleLog("你攻擊 ${result.enemyName} 造成 ${result.damage} 傷害！")
 
-        // D. 比例減傷公式：100 / (100 + 敵人防禦)
-        val damageMultiplier = 100.0 / (100.0 + enemy.defense)
+            if (result.isKill) {
+                updateBattleLog("${result.enemyName} 被擊敗了！")
+                // TODO: 播放死亡音效或特效
+            }
 
-        // E. 最終傷害 (至少造成 1 點傷害)
-        val damage = (baseDamage * damageMultiplier).toInt().coerceAtLeast(1)
-
-        val currentHp = enemy.currentHp ?: enemy.health
-        enemy.currentHp = (currentHp - damage).coerceAtLeast(0)
-
-        // 2. 刷新該格子顯示血條
-        adapter.notifyItemChanged(enemyPosition)
-        updateBattleLog("你攻擊 ${enemy.name} 造成 $damage 傷害！")
-
-        // 3. 檢查敵人是否死亡
-        if (enemy.currentHp == 0) {
-            cell.type = CellType.EMPTY
-            cell.enemy = null
-            // 從 Engine 的 activeEnemies 移除 (建議在 Engine 加一個 removeEnemy 函式)
-            updateBattleLog("${enemy.name} 被擊敗了！")
+            // 3. 進入敵人回合
+            startEnemyTurn()
+        } else {
+            // 防呆：如果點擊時敵人已經不見了
+            currentState = BattleState.PLAYER_TURN_START
         }
+    }
+
+    private fun handleSkillAction(enemyPosition: Int) {
+        actionMenuLayout.visibility = View.GONE
+
+        // 1. 取得當前要使用的技能
+        // 目前先預設使用列表中的第一個技能
+        // 未來您可以做一個彈窗讓玩家選技能
+        val skillToUse = currentPlayerStats.skills.firstOrNull()
+
+        if (skillToUse == null) {
+            updateBattleLog("你沒有可用的技能！")
+            currentState = BattleState.PLAYER_TURN_START
+            return
+        }
+
+        // 2. 呼叫 Engine 執行技能
+        val result = BattleEngine.performPlayerSkill(
+            targetPosition = enemyPosition,
+            playerStats = currentPlayerStats,
+            currentMp = currentPlayerMp, // 需確保您有定義這個變數
+            skill = skillToUse
+        )
+
+        if (!result.success) {
+            // 失敗 (例如 MP 不足)
+            updateBattleLog(result.message)
+            // 回到待機狀態，不結束回合，讓玩家可以改用普攻
+            currentState = BattleState.PLAYER_TURN_START
+            return
+        }
+
+        // 3. 成功：更新 UI
+        currentPlayerMp = result.remainingMp
+        // TODO: 更新 MP 條 UI (例如 playerMpBar.progress = currentPlayerMp)
+
+        adapter.notifyItemChanged(enemyPosition) // 刷新敵人狀態
+        updateBattleLog("${result.message} 對 ${result.enemyName} 造成 ${result.damage} 傷害！")
+
+        if (result.isKill) {
+            updateBattleLog("${result.enemyName} 被消滅了！")
+        }
+
+        // 4. 技能耗費行動，回合結束
         startEnemyTurn()
     }
 
@@ -340,7 +411,7 @@ class BattleActivity : AppCompatActivity() {
                 currentPlayerHp -= result.totalDamage
 
                 if (currentPlayerHp < 0) currentPlayerHp = 0
-                updateHealthUI()
+                updateStatusUI()
             }
 
             if (currentPlayerHp == 0) {
@@ -371,13 +442,17 @@ class BattleActivity : AppCompatActivity() {
         enemyStatusSummary.text = "敵人數量：${BattleEngine.getActiveEnemiesCount()}"
     }
 
-    private fun updateHealthUI() {
-        // 使用插值計算後的精確最大血量
-        playerHpTextView.text = "玩家 HP: $currentPlayerHp / ${currentPlayerStats.health}"
-
-        // 同步更新血條的最大值
+    private fun updateStatusUI() {
+        // 1. 更新 HP
+        playerHpTextView.text = "HP: $currentPlayerHp / ${currentPlayerStats.health}"
         playerHpBar.max = currentPlayerStats.health
         playerHpBar.progress = currentPlayerHp
+
+        // 2. ✅ 更新 MP
+        // 確保 currentPlayerMp 已經在 loadGameData 中初始化
+        playerMpTextView.text = "MP: $currentPlayerMp / ${currentPlayerStats.mana}"
+        playerMpBar.max = currentPlayerStats.mana
+        playerMpBar.progress = currentPlayerMp
     }
 
     private fun updateBattleLog(message: String) {
