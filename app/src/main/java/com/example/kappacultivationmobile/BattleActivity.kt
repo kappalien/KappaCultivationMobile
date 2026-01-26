@@ -5,19 +5,22 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kappacultivationmobile.BgmManager
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.example.kappacultivationmobile.models.LevelMilestone
-import com.example.kappacultivationmobile.R
-import com.example.kappacultivationmobile.battle.model.CellType
-import com.example.kappacultivationmobile.battle.ui.BattleGridAdapter
+import com.example.kappacultivationmobile.models.Skill
 import com.example.kappacultivationmobile.models.Enemy
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.kappacultivationmobile.models.AoeEffectType
+import com.example.kappacultivationmobile.battle.model.CellType
+import com.example.kappacultivationmobile.R
+import com.example.kappacultivationmobile.BgmManager
+import com.example.kappacultivationmobile.battle.ui.BattleGridAdapter
 import com.example.kappacultivationmobile.LevelManager
+import com.example.kappacultivationmobile.BattleDamageLogic
 
 // 戰鬥狀態機
 enum class BattleState {
@@ -33,8 +36,8 @@ enum class BattleState {
 class BattleActivity : AppCompatActivity() {
 
     // 棋盤尺寸定義
-    private val CELL_WIDTH_DP = 50f
-    private val BOARD_ROWS = 14
+    private val BOARD_COLS = 8
+    private val BOARD_ROWS = 12
 
     // UI 元件
     private lateinit var chessboard: RecyclerView
@@ -53,14 +56,17 @@ class BattleActivity : AppCompatActivity() {
 
     // 戰鬥核心數據
     private lateinit var adapter: BattleGridAdapter
+    private lateinit var effectManager: BattleEffectManager
     private lateinit var initialEnemies: List<Enemy>
 
     private var currentPlayerHp = 0
     private var currentPlayerMp: Int = 0
+    private var selectedSkill: Skill? = null
     private lateinit var levelMilestones: List<LevelMilestone>
     private lateinit var currentPlayerStats: LevelMilestone
 
-    private var currentCols = 0 // 實際計算出的列數
+
+    //private var currentCols = 0 // 實際計算出的列數
     private var currentState = BattleState.PREPARING
     private var playerMoveRange = 3 // 玩家可移動的格子數
 
@@ -126,6 +132,10 @@ class BattleActivity : AppCompatActivity() {
         escapeButton = findViewById(R.id.escapeButton)
         enemyStatusSummary = findViewById(R.id.enemyStatusSummary)
 
+        // 初始化 EffectManager
+        val effectContainer = findViewById<FrameLayout>(R.id.effectContainer)
+        effectManager = BattleEffectManager(this, effectContainer)
+
         updateStatusUI()
     }
 
@@ -134,13 +144,13 @@ class BattleActivity : AppCompatActivity() {
         chessboard.post {
             // ✅ 針對 Pixel 9 Pro 類型的螢幕，固定設定為 8 列 (或您喜歡的數量)
             // 這樣就不會因為 CELL_WIDTH_DP 的微小誤差導致超出螢幕
-            currentCols = 8
+            //currentCols = 8
 
             // 強制設定 GridLayoutManager
-            chessboard.layoutManager = GridLayoutManager(this, currentCols)
+            chessboard.layoutManager = GridLayoutManager(this, BOARD_COLS)
 
             // 初始化引擎
-            BattleEngine.initialize(currentCols, BOARD_ROWS, initialEnemies)
+            BattleEngine.initialize(BOARD_COLS, BOARD_ROWS, initialEnemies)
 
             val boardData = BattleEngine.getBoardData()
             adapter = BattleGridAdapter(boardData.toMutableList()) { position -> onTileClicked(position) }
@@ -175,22 +185,10 @@ class BattleActivity : AppCompatActivity() {
         // 技能按鈕點擊
         skillButton.setOnClickListener {
             actionMenuLayout.visibility = View.GONE
+
             if (currentState == BattleState.PLAYER_TURN_START) {
-
-                // 檢查是否有技能 (防呆)
-                if (currentPlayerStats.skills.isEmpty()) {
-                    updateBattleLog("你還沒有學會任何技能！")
-                    // 重新顯示選單
-                    actionMenuLayout.visibility = View.VISIBLE
-                    return@setOnClickListener
-                }
-
-                currentState = BattleState.PLAYER_SKILL_SELECTION
-                updateBattleLog("請選擇技能施放目標。")
-
-                // TODO: 如果技能有特定範圍，這裡應該呼叫 showSkillRange()
-                // 目前先假設範圍跟攻擊一樣是 1 格
-                // updateUIForTurn()
+                // 呼叫彈窗讓玩家選
+                showSkillSelectionDialog()
             }
         }
 
@@ -264,22 +262,52 @@ class BattleActivity : AppCompatActivity() {
         val viewHolder = chessboard.findViewHolderForAdapterPosition(position) ?: return
         val itemView = viewHolder.itemView
 
-        val coords = IntArray(2)
-        itemView.getLocationInWindow(coords)
-
-        // 取得 RecyclerView 在視窗中的偏移
-        val parentCoords = IntArray(2)
-        findViewById<View>(R.id.battleBackground).getLocationInWindow(parentCoords)
-
-        // 計算相對於父容器的座標
-        val relativeX = coords[0] - parentCoords[0]
-        val relativeY = coords[1] - parentCoords[1]
-
-        // 設定選單中心點
-        actionMenuLayout.translationX = relativeX.toFloat() - (actionMenuLayout.width / 2) + (itemView.width / 2)
-        actionMenuLayout.translationY = relativeY.toFloat() - (actionMenuLayout.height / 2) + (itemView.height / 2)
-
+        // 1. 先顯示選單，這樣才能在 post 裡面抓到正確的選單寬高
         actionMenuLayout.visibility = View.VISIBLE
+
+        // 使用 post 確保 Layout 完成後再計算座標
+        actionMenuLayout.post {
+            // --- A. 準備數據 ---
+            val menuWidth = actionMenuLayout.width
+            val menuHeight = actionMenuLayout.height
+
+            // 取得父容器 (ConstraintLayout) 的寬高，也就是螢幕可用區域
+            val parentView = actionMenuLayout.parent as View
+            val parentWidth = parentView.width
+            val parentHeight = parentView.height
+
+            // 設定一個安全邊距 (例如 16dp)，不要讓選單緊貼著螢幕邊緣
+            val padding = (16 * resources.displayMetrics.density).toInt()
+
+            // --- B. 取得格子的螢幕座標 ---
+            val coords = IntArray(2)
+            itemView.getLocationInWindow(coords)
+
+            val parentCoords = IntArray(2)
+            parentView.getLocationInWindow(parentCoords)
+
+            // 計算格子相對於父容器的座標
+            val relativeX = coords[0] - parentCoords[0]
+            val relativeY = coords[1] - parentCoords[1]
+
+            // --- C. 計算「理想」的置中位置 (您原本的邏輯) ---
+            var targetX = relativeX + (itemView.width / 2) - (menuWidth / 2)
+            var targetY = relativeY + (itemView.height / 2) - (menuHeight / 2)
+
+            // --- D. 關鍵修正：邊界限制 (Clamping) ---
+            // 如果 targetX < padding，強制設為 padding (防止超出左邊)
+            // 如果 targetX > parentWidth - menuWidth，強制設為最大值 (防止超出右邊)
+
+            // X 軸限制：左邊界 ~ 右邊界
+            targetX = targetX.coerceIn(padding, parentWidth - menuWidth - padding)
+
+            // Y 軸限制：上邊界 ~ 下邊界
+            targetY = targetY.coerceIn(padding, parentHeight - menuHeight - padding)
+
+            // --- E. 套用座標 ---
+            actionMenuLayout.translationX = targetX.toFloat()
+            actionMenuLayout.translationY = targetY.toFloat()
+        }
     }
 
     // 處理移動動作
@@ -304,18 +332,19 @@ class BattleActivity : AppCompatActivity() {
         val result = BattleEngine.performPlayerAttack(enemyPosition, currentPlayerStats)
 
         if (result != null) {
-            // 1. 刷新格子顯示 (血條變化/敵人消失)
             adapter.notifyItemChanged(enemyPosition)
-
-            // 2. 顯示 Log
+            enemyStatusSummary.text = "敵人數量：${BattleEngine.getActiveEnemiesCount()}"
             updateBattleLog("你攻擊 ${result.enemyName} 造成 ${result.damage} 傷害！")
 
             if (result.isKill) {
                 updateBattleLog("${result.enemyName} 被擊敗了！")
-                // TODO: 播放死亡音效或特效
-            }
 
-            // 3. 進入敵人回合
+                // 檢查是否勝利
+                if (BattleEngine.getActiveEnemiesCount() == 0) {
+                    handleBattleEnd(true) // 觸發勝利結算
+                    return // 結束函式，不進入敵人回合
+                }
+            }
             startEnemyTurn()
         } else {
             // 防呆：如果點擊時敵人已經不見了
@@ -324,15 +353,13 @@ class BattleActivity : AppCompatActivity() {
     }
 
     private fun handleSkillAction(enemyPosition: Int) {
-        actionMenuLayout.visibility = View.GONE
 
-        // 1. 取得當前要使用的技能
-        // 目前先預設使用列表中的第一個技能
-        // 未來您可以做一個彈窗讓玩家選技能
-        val skillToUse = currentPlayerStats.skills.firstOrNull()
+        // 1. 取得剛剛選好的技能 (原本是 val skillToUse = currentPlayerStats.skills.firstOrNull())
+        val skillToUse = selectedSkill
 
+        // 防呆：理論上這時候 selectedSkill 不該是 null
         if (skillToUse == null) {
-            updateBattleLog("你沒有可用的技能！")
+            updateBattleLog("技能選擇發生錯誤，請重新選擇。")
             currentState = BattleState.PLAYER_TURN_START
             return
         }
@@ -341,31 +368,88 @@ class BattleActivity : AppCompatActivity() {
         val result = BattleEngine.performPlayerSkill(
             targetPosition = enemyPosition,
             playerStats = currentPlayerStats,
-            currentMp = currentPlayerMp, // 需確保您有定義這個變數
+            currentMp = currentPlayerMp,
             skill = skillToUse
         )
 
         if (!result.success) {
-            // 失敗 (例如 MP 不足)
+            // 失敗 (例如 MP 不足，雖然前面檢查過但保留雙重保險)
             updateBattleLog(result.message)
-            // 回到待機狀態，不結束回合，讓玩家可以改用普攻
+            // 回到待機狀態
             currentState = BattleState.PLAYER_TURN_START
+            selectedSkill = null // 重置選擇
             return
         }
 
         // 3. 成功：更新 UI
         currentPlayerMp = result.remainingMp
-        // TODO: 更新 MP 條 UI (例如 playerMpBar.progress = currentPlayerMp)
+
+        // ✅ 更新 MP 條 (記得之前我們加過 updateStatusUI)
+        updateStatusUI()
 
         adapter.notifyItemChanged(enemyPosition) // 刷新敵人狀態
         updateBattleLog("${result.message} 對 ${result.enemyName} 造成 ${result.damage} 傷害！")
 
         if (result.isKill) {
             updateBattleLog("${result.enemyName} 被消滅了！")
+
+            // 檢查是否勝利
+            if (BattleEngine.getActiveEnemiesCount() == 0) {
+                handleBattleEnd(true)
+                return
+            }
         }
 
-        // 4. 技能耗費行動，回合結束
+        // 4. 清理狀態與回合結束
+        selectedSkill = null // ✅ 用完記得清空，避免下次誤用
         startEnemyTurn()
+    }
+
+    // 顯示Skll選單
+    private fun showSkillSelectionDialog() {
+        val skills = currentPlayerStats.skills
+
+        if (skills.isEmpty()) {
+            updateBattleLog("你還沒有學會任何技能！")
+            actionMenuLayout.visibility = View.VISIBLE
+            return
+        }
+
+        val skillNames = skills.map { "${it.name} (MP: ${it.mpCost})" }.toTypedArray()
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("選擇要使用的技能")
+            .setItems(skillNames) { _, which ->
+                val chosenSkill = skills[which]
+
+                // 檢查 MP
+                if (currentPlayerMp < chosenSkill.mpCost) {
+                    updateBattleLog("MP 不足，無法使用 ${chosenSkill.name}")
+                    actionMenuLayout.visibility = View.VISIBLE
+                    return@setItems
+                }
+
+                selectedSkill = chosenSkill
+
+                // ✅ 關鍵修改：判斷是否為 AOE 技能
+                // 假設你的 Skill model 有一個屬性 targetType 或 isAoe
+                // 這裡以 targetType == SkillTarget.ALL 為例
+                if (chosenSkill.isAOE) {
+                    // 如果是全體技能，直接執行
+                    executeAOESkillAction(chosenSkill)
+                } else {
+                    // 如果是單體技能，才進入 "選擇目標狀態"
+                    currentState = BattleState.PLAYER_SKILL_SELECTION
+                    updateBattleLog("已選擇「${chosenSkill.name}」，請點擊敵人施放！")
+                }
+            }
+            .setNegativeButton("取消") { _, _ ->
+                actionMenuLayout.visibility = View.VISIBLE
+            }
+            .setOnCancelListener {
+                actionMenuLayout.visibility = View.VISIBLE
+            }
+            .show()
     }
 
     // 顯示可移動範圍
@@ -397,31 +481,54 @@ class BattleActivity : AppCompatActivity() {
     private fun startEnemyTurn() {
         currentState = BattleState.ENEMY_TURN
         updateUIForTurn()
-        updateBattleLog("敵人回合開始...")
+        updateBattleLog("--- 敵人回合開始 ---")
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            // ✅ 接收包含 totalDamage 的 result
-            val result = BattleEngine.performEnemyTurn(currentPlayerStats)
+        // ✅ 使用協程來處理延遲與依序執行
+        lifecycleScope.launch {
+            // 1. 從 Engine 取得所有活著的敵人
+            val enemies = BattleEngine.getEnemyList()
 
-            adapter.updateMultipleTiles(result.movedPositions)
-            updateBattleLog(result.log)
+            for (enemyCell in enemies) {
+                // 檢查：如果敵人已經死了（可能被機關殺死等），跳過
+                if (enemyCell.enemy == null) continue
 
-            if (result.playerAttacked) {
-                // ✅ 修正：使用實際計算出的傷害，不再使用固定值 5
-                currentPlayerHp -= result.totalDamage
+                // 2. 讓這隻敵人行動
+                val result = BattleEngine.processSingleEnemyAction(enemyCell, currentPlayerStats)
 
-                if (currentPlayerHp < 0) currentPlayerHp = 0
-                updateStatusUI()
+                // 3. 更新 UI
+                if (result.movedPositions.isNotEmpty()) {
+                    adapter.updateMultipleTiles(result.movedPositions)
+                }
+                if (result.log.isNotEmpty()) {
+                    updateBattleLog(result.log.trim())
+                }
+
+                // 4. 扣血
+                if (result.playerAttacked) {
+                    currentPlayerHp -= result.totalDamage
+                    if (currentPlayerHp < 0) currentPlayerHp = 0
+                    updateStatusUI()
+
+                    // 播放受傷音效 (可選)
+                    // EffectSoundManager.play(R.raw.sound_hit)
+                }
+
+                // 5. ✅ 關鍵：暫停 0.8 秒再換下一隻
+                delay(800)
+
+                // 檢查玩家是否死亡 (如果死了就不用讓後面敵人動了)
+                if (currentPlayerHp == 0) break
             }
 
+            // 所有敵人都動完了
             if (currentPlayerHp == 0) {
                 handleBattleEnd(false)
             } else {
                 currentState = BattleState.PLAYER_TURN_START
-                updateBattleLog("你的回合！")
+                updateBattleLog("--- 你的回合 ---")
                 updateUIForTurn()
             }
-        }, 1500)
+        }
     }
 
     // 根據狀態更新按鈕啟用狀態
@@ -453,6 +560,128 @@ class BattleActivity : AppCompatActivity() {
         playerMpTextView.text = "MP: $currentPlayerMp / ${currentPlayerStats.mana}"
         playerMpBar.max = currentPlayerStats.mana
         playerMpBar.progress = currentPlayerMp
+    }
+
+    // 執行全體(AOE)技能邏輯
+    private fun executeAOESkillAction(skill: Skill) {
+        // 1. 先扣除 MP 並更新 UI
+        currentPlayerMp -= skill.mpCost
+        updateStatusUI()
+        actionMenuLayout.visibility = View.GONE // 隱藏選單
+        updateBattleLog("施放全體技能：${skill.name}！")
+
+        // 2. 定義傷害計算邏輯 (等特效播完再執行)
+        val performDamageLogic = {
+            // 取得所有活著的敵人
+            val activeEnemies = BattleEngine.getEnemyList().filter { it.enemy != null }
+
+            if (activeEnemies.isEmpty()) {
+                updateBattleLog("戰場上沒有敵人了...")
+                startEnemyTurn()
+            } else {
+                var killCount = 0
+
+                // 對每個敵人造成傷害
+                activeEnemies.forEach { cell ->
+                    val position = adapter.boardData.indexOf(cell)
+                    val enemy = cell.enemy!!
+
+                    // ✅ 修正 1: 改為呼叫 BattleDamageLogic 的正確方法
+                    val damage = BattleDamageLogic.calculateSkillDamage(
+                        attackerAtk = currentPlayerStats.attack,
+                        defenderDef = enemy.defense,
+                        multiplier = skill.multiplier
+                    )
+
+                    // ✅ 修正 2: 處理 Int? 的減法運算
+                    // 先取得當前血量，若為 null 則視為滿血 (health)
+                    val currentHp = enemy.currentHp ?: enemy.health
+                    // 計算新血量，並確保不小於 0
+                    val newHp = (currentHp - damage).coerceAtLeast(0)
+
+                    // 寫回敵人數據
+                    enemy.currentHp = newHp
+
+                    updateBattleLog("對 ${enemy.name} 造成 $damage 點傷害！")
+                    adapter.notifyItemChanged(position) // 更新格子顯示 (血條)
+
+                    if (newHp <= 0) {
+                        cell.enemy = null // 移除敵人
+                        cell.type = CellType.EMPTY
+                        adapter.notifyItemChanged(position) // 更新格子變空
+                        updateBattleLog("${enemy.name} 被消滅了！")
+                        killCount++
+                    }
+                }
+
+                // 3. 通知 Engine 清理死掉的敵人
+                BattleEngine.refreshActiveEnemies()
+
+                // 4. ✅ 更新 UI 上的敵人數量文字 (因為數量變了)
+                enemyStatusSummary.text = "敵人數量：${BattleEngine.getActiveEnemiesCount()}"
+
+                // 5. 檢查勝利條件
+                if (BattleEngine.getActiveEnemiesCount() == 0) {
+                    handleBattleEnd(true)
+                } else {
+                    // 沒贏的話，換敵人回合
+                    startEnemyTurn()
+                }
+            }
+        }
+
+        // 3. 播放全螢幕粒子特效
+        if (skill.aoeEffectType != AoeEffectType.NONE) {
+            effectManager.playAoeEffect(skill.aoeEffectType) {
+                performDamageLogic() // 特效播完後結算傷害
+            }
+
+            // 2. ✅ 新增：製造「亂數打擊感」
+            // 在粒子特效播放的 2 秒鐘內，隨機在敵人身上炸開花
+            lifecycleScope.launch {
+                val hitEffect = skill.targetEffectResId ?: R.drawable.effect_explosion
+                val activeEnemies = BattleEngine.getEnemyList().filter { it.enemy != null }
+
+                if (activeEnemies.isNotEmpty()) {
+                    // 模擬 5~8 次打擊
+                    val hits = (5..8).random()
+                    repeat(hits) {
+                        // 隨機挑選一個倒楣的敵人
+                        val randomEnemyCell = activeEnemies.random()
+                        val position = adapter.boardData.indexOf(randomEnemyCell)
+
+                        // 在他頭上放個特效
+                        playEffectOnCell(position, hitEffect)
+
+                        // 隨機間隔 100~300ms，製造錯落感
+                        delay((100..300).random().toLong())
+                    }
+                }
+            }
+        } else {
+            performDamageLogic()
+        }
+
+        // 4. 播放特效 -> 結束後執行上面的傷害邏輯
+        // ✅ 修正 3: 因為上面加了 Import，這裡的 AoeEffectType 就不會報錯了
+        if (skill.aoeEffectType != AoeEffectType.NONE) {
+            updateBattleLog("施放全體絕學：${skill.name}！")
+            effectManager.playAoeEffect(skill.aoeEffectType) {
+                performDamageLogic() // 特效播完後，回呼執行傷害
+            }
+        } else {
+            performDamageLogic()
+        }
+    }
+
+    // 在指定格子上播放特效
+    private fun playEffectOnCell(position: Int, effectResId: Int) {
+        // 1. 找到該位置的 ViewHolder
+        // 注意：如果該位置不在螢幕範圍內 (Scroll出去了)，這可能會回傳 null，所以要用 ?.
+        val holder = chessboard.findViewHolderForAdapterPosition(position) as? com.example.kappacultivationmobile.battle.ui.BattleTileViewHolder
+
+        // 2. 執行播放
+        holder?.playEffect(effectResId)
     }
 
     private fun updateBattleLog(message: String) {
@@ -512,6 +741,7 @@ class BattleActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        BattleEngine.clear()
         BgmManager.stop()
     }
 }

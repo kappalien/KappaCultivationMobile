@@ -9,12 +9,3 @@ data class LevelMilestone(
     val nextLevelSteps: Int,
     val skills: List<Skill> = emptyList()
 )
-
-data class Skill(
-    val id: String,
-    val name: String,
-    val type: String,
-    val multiplier: Double,
-    val mpCost: Int,
-    val desc: String? = null
-)

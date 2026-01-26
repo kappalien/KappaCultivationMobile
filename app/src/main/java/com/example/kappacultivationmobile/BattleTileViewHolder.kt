@@ -16,6 +16,8 @@ class BattleTileViewHolder(itemView: View, private val onClick: (Int) -> Unit) :
     private val unitImage: ImageView = itemView.findViewById(R.id.unitImage)
     private val unitStatusText: TextView = itemView.findViewById(R.id.unitStatusText)
 
+    val effectOverlay: ImageView = itemView.findViewById(R.id.effectOverlay)
+
     init {
         // 設置點擊事件，將點擊的位置傳遞給 Adapter/Activity 處理
         itemView.setOnClickListener {
@@ -25,22 +27,22 @@ class BattleTileViewHolder(itemView: View, private val onClick: (Int) -> Unit) :
 
     fun bind(cell: BattleCell) {
         // 1. 重置並設置背景
-        cellBackground.setImageResource(R.drawable.ic_tile_grass) // 假設這是草地圖塊
-        cellBackground.colorFilter = null // 清除所有濾鏡
+        cellBackground.setBackgroundResource(R.drawable.bg_battle_grid)
+        cellBackground.setImageResource(0) // 清除前景圖片 (確保沒有殘留)
+        cellBackground.colorFilter = null  // 清除濾鏡
 
         // 2. 處理高亮狀態
         when (cell.type) {
             CellType.HIGHLIGHT_MOVE -> {
-                // 藍色高亮（假設 R.color.highlight_move 存在）
-                cellBackground.setColorFilter(ContextCompat.getColor(itemView.context, R.color.highlight_move), android.graphics.PorterDuff.Mode.MULTIPLY)
+                // 藍色高亮：直接設定背景色
+                cellBackground.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.highlight_move))
             }
             CellType.HIGHLIGHT_ATTACK -> {
-                // 紅色高亮（假設 R.color.highlight_attack 存在）
-                cellBackground.setColorFilter(ContextCompat.getColor(itemView.context, R.color.highlight_attack), android.graphics.PorterDuff.Mode.MULTIPLY)
+                // 紅色高亮：直接設定背景色
+                cellBackground.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.highlight_attack))
             }
             else -> {
-                // 移除顏色濾鏡
-                cellBackground.colorFilter = null
+                // 一般狀態：不做事，維持上面的 bg_battle_grid
             }
         }
 
@@ -70,19 +72,43 @@ class BattleTileViewHolder(itemView: View, private val onClick: (Int) -> Unit) :
             CellType.ENEMY -> {
                 unitImage.visibility = View.VISIBLE
                 cell.enemy?.let { enemy ->
-                    // 根據敵人數據載入圖片
+                    // 1. 先去掉 ".png" (變成 "alien")
+                    val rawName = enemy.image.replace(".png", "")
+
+                    // 2. 加上前綴 (變成 "enemy_alien")
+                    val resourceName = "enemy_$rawName"
+
+                    // 3. 搜尋資源 ID (尋找 R.drawable.enemy_alien)
                     val resId = itemView.context.resources.getIdentifier(
-                        enemy.image.replace(".png", ""),
+                        resourceName,
                         "drawable",
                         itemView.context.packageName
                     )
+
+                    // 4. 設定圖片 (如果找不到就顯示預設圖)
                     unitImage.setImageResource(if (resId != 0) resId else R.drawable.enemy_default)
+
                     unitStatusText.visibility = View.VISIBLE
-                    unitStatusText.text = "${enemy.name}" // 顯示敵人名稱
-                    // unitStatusText.text = "Lv.${enemy.level}" // 顯示敵人等級
+                    unitStatusText.text = "${enemy.name}"
                 }
             }
             else -> { /* 空白或障礙物 */ }
         }
+    }
+
+    fun playEffect(resId: Int) {
+        effectOverlay.setImageResource(resId)
+        effectOverlay.visibility = View.VISIBLE
+
+        // 簡單的閃爍動畫 (出現 -> 0.3秒後消失)
+        effectOverlay.alpha = 1f
+        effectOverlay.animate()
+            .alpha(0f)
+            .setDuration(300) // 特效持續 0.3 秒
+            .withEndAction {
+                effectOverlay.visibility = View.GONE
+                effectOverlay.alpha = 1f // 重置透明度
+            }
+            .start()
     }
 }

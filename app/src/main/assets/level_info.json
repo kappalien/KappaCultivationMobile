@@ -7,8 +7,11 @@
     "defense": 5,
     "nextLevelSteps": 100,
     "skills": [
-      { "id": "p_01", "name": "基礎抓撓", "type": "Physical", "multiplier": 1.1, "mpCost": 0 },
-      { "id": "b_01", "name": "野性直覺", "type": "Buff", "multiplier": 0.1, "mpCost": 15, "desc": "提升10%閃避率" }
+      { "id": "p_01_basic", "name": "普通攻擊", "type": "Physical", "multiplier": 1.0, "mpCost": 0 },
+      { "id": "test_sword_01", "name": "測試-木劍陣", "type": "Physical", "multiplier": 1.1, "mpCost": 5, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_01", "name": "測試-小火花", "type": "Magic", "multiplier": 1.1, "mpCost": 5, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_01", "name": "測試-冷風", "type": "Magic", "multiplier": 1.1, "mpCost": 5, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_01", "name": "測試-毛毛雨", "type": "Magic", "multiplier": 1.1, "mpCost": 5, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" }
     ]
   },
   {
@@ -19,8 +22,11 @@
     "defense": 40,
     "nextLevelSteps": 1000,
     "skills": [
-      { "id": "p_01", "name": "基礎抓撓", "type": "Physical", "multiplier": 1.1, "mpCost": 0 },
-      { "id": "m_01", "name": "靈力彈", "type": "Magic", "multiplier": 1.4, "mpCost": 35 }
+      { "id": "p_10_basic", "name": "強力抓撓", "type": "Physical", "multiplier": 1.2, "mpCost": 10 },
+      { "id": "test_sword_10", "name": "鐵劍齊發", "type": "Physical", "multiplier": 1.3, "mpCost": 30, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_10", "name": "火球雨", "type": "Magic", "multiplier": 1.3, "mpCost": 30, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_10", "name": "冰霜吐息", "type": "Magic", "multiplier": 1.3, "mpCost": 30, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_10", "name": "急驟雨", "type": "Magic", "multiplier": 1.3, "mpCost": 30, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" }
     ]
   },
   {
@@ -31,8 +37,10 @@
     "defense": 75,
     "nextLevelSteps": 2000,
     "skills": [
-      { "id": "p_02", "name": "強力衝撞", "type": "Physical", "multiplier": 1.6, "mpCost": 20 },
-      { "id": "m_01", "name": "靈力彈", "type": "Magic", "multiplier": 1.4, "mpCost": 35 },
+      { "id": "test_sword_20", "name": "劍氣掃蕩", "type": "Physical", "multiplier": 1.6, "mpCost": 60, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_20", "name": "烈焰波動", "type": "Magic", "multiplier": 1.6, "mpCost": 60, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_20", "name": "寒冰刺", "type": "Magic", "multiplier": 1.6, "mpCost": 60, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_20", "name": "水龍捲", "type": "Magic", "multiplier": 1.6, "mpCost": 60, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" },
       { "id": "b_02", "name": "石化皮膚", "type": "Buff", "multiplier": 0.2, "mpCost": 40, "desc": "降低20%受到的傷害" }
     ]
   },
@@ -44,8 +52,10 @@
     "defense": 115,
     "nextLevelSteps": 3000,
     "skills": [
-      { "id": "p_02", "name": "強力衝撞", "type": "Physical", "multiplier": 1.6, "mpCost": 20 },
-      { "id": "m_02", "name": "元素吐息", "type": "Magic", "multiplier": 1.9, "mpCost": 60 }
+      { "id": "test_sword_30", "name": "幻影劍舞", "type": "Physical", "multiplier": 1.9, "mpCost": 100, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_30", "name": "烈焰流星", "type": "Magic", "multiplier": 1.9, "mpCost": 100, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_30", "name": "極地風暴", "type": "Magic", "multiplier": 1.9, "mpCost": 100, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_30", "name": "驚滔駭浪", "type": "Magic", "multiplier": 1.9, "mpCost": 100, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" }
     ]
   },
   {
@@ -56,8 +66,10 @@
     "defense": 210,
     "nextLevelSteps": 5000,
     "skills": [
-      { "id": "p_03", "name": "裂地重擊", "type": "Physical", "multiplier": 2.2, "mpCost": 80 },
-      { "id": "m_03", "name": "靈魂吸取", "type": "Magic", "multiplier": 1.5, "mpCost": 100, "desc": "傷害的30%轉化為治療" }
+      { "id": "test_sword_50", "name": "裂地劍陣", "type": "Physical", "multiplier": 2.5, "mpCost": 250, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_50", "name": "天火燎原", "type": "Magic", "multiplier": 2.5, "mpCost": 250, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_50", "name": "絕對零度", "type": "Magic", "multiplier": 2.5, "mpCost": 250, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_50", "name": "翻江倒海", "type": "Magic", "multiplier": 2.5, "mpCost": 250, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" }
     ]
   },
   {
@@ -68,9 +80,10 @@
     "defense": 550,
     "nextLevelSteps": 10000,
     "skills": [
-      { "id": "p_04", "name": "終焉神擊", "type": "Physical", "multiplier": 3.5, "mpCost": 250 },
-      { "id": "m_04", "name": "萬象寂滅", "type": "Magic", "multiplier": 4.0, "mpCost": 500 },
-      { "id": "b_04", "name": "絕對領域", "type": "Buff", "multiplier": 1.0, "mpCost": 800, "desc": "一回合內免疫傷害" }
+      { "id": "test_sword_100", "name": "萬劍歸宗", "type": "Physical", "multiplier": 4.0, "mpCost": 500, "isAOE": true, "aoeEffectType": "SWORD_RAIN" },
+      { "id": "test_meteor_100", "name": "萬象寂滅", "type": "Magic", "multiplier": 4.0, "mpCost": 500, "isAOE": true, "aoeEffectType": "METEOR_SHOWER" },
+      { "id": "test_ice_100", "name": "冰河世紀", "type": "Magic", "multiplier": 4.0, "mpCost": 500, "isAOE": true, "aoeEffectType": "BLIZZARD" },
+      { "id": "test_rain_100", "name": "神之洗禮", "type": "Magic", "multiplier": 4.0, "mpCost": 500, "isAOE": true, "aoeEffectType": "HEAVY_RAIN" }
     ]
   }
 ]

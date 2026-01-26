@@ -53,14 +53,39 @@ object BattleEngine {
 
     fun getBoardData(): List<BattleCell> = boardData
 
-    // 放置玩家單位 (固定在底部中央)
+    // 隨機放置玩家 (限制在棋盤下半部，避免與上半部的敵人重疊)
     private fun placePlayerUnit() {
-        val playerCol = cols / 2
-        val playerRow = rows - 1 // 最後一行
-        val position = playerRow * cols + playerCol
+        // 1. 定義玩家生成的區域範圍
+        // 敵人在上半部 (0 ~ rows/2)，所以玩家範圍從 rows/2 開始直到棋盤結束
+        val startRow = rows / 2
+        val totalRows = rows
 
-        playerCell = boardData[position].apply {
-            type = CellType.PLAYER
+        val availableIndices = mutableListOf<Int>()
+
+        // 2. 收集下半部所有的空位座標
+        for (r in startRow until totalRows) {
+            for (c in 0 until cols) {
+                val pos = getPosition(r, c)
+                // 檢查該格子是否為空 (雖然初始化時通常是空的，但這是好習慣)
+                if (boardData[pos].type == CellType.EMPTY) {
+                    availableIndices.add(pos)
+                }
+            }
+        }
+
+        // 3. 從可用位置中隨機挑選一個
+        if (availableIndices.isNotEmpty()) {
+            val randomPos = availableIndices.random()
+
+            playerCell = boardData[randomPos].apply {
+                type = CellType.PLAYER
+            }
+        } else {
+            // 防呆機制：如果真的沒位子 (極端情況)，就放回原本的底部中央
+            val fallbackPos = getPosition(rows - 1, cols / 2)
+            playerCell = boardData[fallbackPos].apply {
+                type = CellType.PLAYER
+            }
         }
     }
 
@@ -143,16 +168,15 @@ object BattleEngine {
         val cell = boardData[targetPosition]
         val enemy = cell.enemy ?: return null
 
-        // 1. 使用 BattleLogic 計算基礎傷害 (集中管理公式)
-        val rawDamage = BattleDamageLogic.calculateDamage(playerStats.attack, enemy.defense)
+        // 1. 普攻
+        val basicAttackMultiplier = 1.0
 
-        // 2. 處理技能倍率 (這裡先簡化，未來可擴充)
-        val activeSkill = playerStats.skills.firstOrNull()
-        val skillMultiplier = activeSkill?.multiplier ?: 1.0
-
-        // 3. 處理防禦減免公式
-        val damageMultiplier = 100.0 / (100.0 + enemy.defense)
-        val finalDamage = (rawDamage * skillMultiplier * damageMultiplier).toInt().coerceAtLeast(1)
+        // 直接呼叫 Logic，傳入 1.0
+        val finalDamage = BattleDamageLogic.calculateFinalDamage(
+            atk = playerStats.attack,
+            def = enemy.defense,
+            skillMultiplier = basicAttackMultiplier
+        )
 
         // 4. 扣血
         val currentHp = enemy.currentHp ?: enemy.health
@@ -227,86 +251,6 @@ object BattleEngine {
         )
     }
 
-    /** 執行敵人回合 (AI 動作) */
-    fun performEnemyTurn(playerInfo: LevelMilestone): EnemyTurnResult {
-        val movedPositions = mutableListOf<Int>()
-        var totalDamage = 0 // ✅ 加總所有敵人的傷害
-        var playerAttacked = false
-        val log = StringBuilder()
-
-        val enemiesToProcess = activeEnemies.toList()
-
-        for (enemyCell in enemiesToProcess) {
-            val enemy = enemyCell.enemy ?: continue
-            var currentEnemyRow = enemyCell.row
-            var currentEnemyCol = enemyCell.col
-
-            // 1. 判斷攻擊：如果一開始就在旁邊，直接攻擊 (不移動)
-            if (isAdjacent(currentEnemyRow, currentEnemyCol, playerCell.row, playerCell.col)) {
-                val damage = BattleDamageLogic.calculateDamage(enemy.attack, playerInfo.defense ?: 0)
-                totalDamage += damage // ✅ 累加
-                log.append("${enemy.name} 攻擊了你，造成 ${damage} 傷害！\n")
-                playerAttacked = true
-            } else {
-                // 2. 移動邏輯：隨機決定走 1 或 2 步
-                val stepsToMove = (1..2).random() // ✅ 隨機 1~2 步
-                var stepsTaken = 0
-                // 使用迴圈來執行移動
-                while (stepsTaken < stepsToMove) {
-                    // 重新計算當前座標 (因為可能剛走了一步)
-                    val enemyPos = getPosition(currentEnemyRow, currentEnemyCol)
-
-                    // 計算下一步方向
-                    val (nextR, nextC) = calculateMoveTowards(currentEnemyRow, currentEnemyCol, playerCell.row, playerCell.col)
-                    val newPos = getPosition(nextR, nextC)
-
-                    // 檢查目標格是否為空 (避免穿牆或重疊)
-                    if (boardData[newPos].type == CellType.EMPTY) {
-                        // 執行移動更新
-                        val targetCell = boardData[newPos]
-                        targetCell.type = CellType.ENEMY
-                        targetCell.enemy = enemy
-
-                        // 清除舊格子
-                        val oldCell = boardData[enemyPos]
-                        oldCell.type = CellType.EMPTY
-                        oldCell.enemy = null
-
-                        // 更新引用與座標
-                        activeEnemies.remove(oldCell)
-                        activeEnemies.add(targetCell)
-
-                        currentEnemyRow = nextR
-                        currentEnemyCol = nextC
-
-                        movedPositions.add(enemyPos) // 紀錄軌跡
-                        movedPositions.add(newPos)
-
-                        stepsTaken++
-
-                        // 如果走了一步後發現已經貼身，就停止移動準備攻擊
-                        if (isAdjacent(currentEnemyRow, currentEnemyCol, playerCell.row, playerCell.col)) {
-                            break
-                        }
-                    } else {
-                        // 前方有障礙物，停止移動
-                        break
-                    }
-                }
-
-                // 3. 移動後的攻擊判定
-                if (isAdjacent(currentEnemyRow, currentEnemyCol, playerCell.row, playerCell.col)) {
-                    val damage = BattleDamageLogic.calculateDamage(enemy.attack, playerInfo.defense ?: 0)
-                    totalDamage += damage
-                    log.append("${enemy.name} 移動後攻擊了你，造成 ${damage} 傷害！\n")
-                    playerAttacked = true
-                }
-            }
-        }
-        // 回傳包含 totalDamage 的結果物件
-        return EnemyTurnResult(playerAttacked, movedPositions, log.toString(), totalDamage)
-    }
-
     // 曼哈頓距離判斷是否相鄰
     private fun isAdjacent(r1: Int, c1: Int, r2: Int, c2: Int): Boolean {
         return abs(r1 - r2) + abs(c1 - c2) == 1
@@ -325,9 +269,144 @@ object BattleEngine {
         return Pair(newR, newC)
     }
 
+    /**
+     * 智慧尋路：嘗試靠近目標。
+     * 如果最佳路徑被擋住，會嘗試繞路。
+     */
+    private fun getSmartMoveTowards(currentR: Int, currentC: Int, targetR: Int, targetC: Int): Pair<Int, Int> {
+        val distR = targetR - currentR
+        val distC = targetC - currentC
+
+        // 定義優先順序：距離較遠的軸向優先
+        val moves = mutableListOf<Pair<Int, Int>>()
+        if (kotlin.math.abs(distR) >= kotlin.math.abs(distC)) {
+            if (distR != 0) moves.add(Pair(if (distR > 0) 1 else -1, 0)) // 垂直
+            if (distC != 0) moves.add(Pair(0, if (distC > 0) 1 else -1)) // 水平
+        } else {
+            if (distC != 0) moves.add(Pair(0, if (distC > 0) 1 else -1)) // 水平
+            if (distR != 0) moves.add(Pair(if (distR > 0) 1 else -1, 0)) // 垂直
+        }
+
+        // 嘗試所有可能的方向
+        for ((dr, dc) in moves) {
+            val checkR = currentR + dr
+            val checkC = currentC + dc
+
+            // 檢查邊界
+            if (checkR in 0 until rows && checkC in 0 until cols) {
+                val checkPos = getPosition(checkR, checkC)
+                // 檢查是否為空格
+                if (boardData[checkPos].type == CellType.EMPTY) {
+                    return Pair(checkR, checkC) // 找到路徑
+                }
+            }
+        }
+
+        // 無路可走，回傳原點
+        return Pair(currentR, currentC)
+    }
+
     // 獲取當前活躍在棋盤上的敵人數量
     fun getActiveEnemiesCount(): Int {
         // activeEnemies 是 BattleEngine 內部的 MutableList<BattleCell> 屬性
         return activeEnemies.size
+    }
+
+    // ✅ 新增：取得當前活躍敵人的列表 (回傳複製的列表以避免並發修改問題)
+    fun getEnemyList(): List<BattleCell> {
+        return activeEnemies.toList()
+    }
+
+    // ✅ 修改：只處理「單一」敵人的回合邏輯
+    // 回傳值改為單次行動的結果
+    fun processSingleEnemyAction(enemyCell: BattleCell, playerStats: LevelMilestone): EnemyTurnResult {
+        val enemy = enemyCell.enemy!!
+        val movedPositions = mutableListOf<Int>()
+        var damageDealt = 0
+        var playerAttacked = false
+        val logBuilder = StringBuilder()
+
+        // 紀錄當前位置 (會隨著移動更新)
+        var currentR = enemyCell.row
+        var currentC = enemyCell.col
+
+        // 1. 判斷是否直接攻擊 (不用移動)
+        if (isAdjacent(currentR, currentC, playerCell.row, playerCell.col)) {
+            val dmg = BattleDamageLogic.calculateFinalDamage(enemy.attack, playerStats.defense ?: 0)
+            damageDealt = dmg
+            playerAttacked = true
+            logBuilder.append("${enemy.name} 攻擊了你，造成 $dmg 傷害！\n")
+        } else {
+            // 2. 移動邏輯
+            val stepsToMove = (1..2).random()
+            var stepsTaken = 0
+
+            while (stepsTaken < stepsToMove) {
+                val enemyPos = getPosition(currentR, currentC)
+
+                // ✅ 使用智慧尋路
+                val (nextR, nextC) = getSmartMoveTowards(currentR, currentC, playerCell.row, playerCell.col)
+                val newPos = getPosition(nextR, nextC)
+
+                // 如果尋路結果還是原點，代表無路可走，停止移動
+                if (newPos == enemyPos) break
+
+                // 執行移動
+                if (boardData[newPos].type == CellType.EMPTY) {
+                    val targetCell = boardData[newPos]
+                    targetCell.type = CellType.ENEMY
+                    targetCell.enemy = enemy
+
+                    val oldCell = boardData[enemyPos]
+                    oldCell.type = CellType.EMPTY
+                    oldCell.enemy = null
+
+                    activeEnemies.remove(oldCell)
+                    activeEnemies.add(targetCell)
+
+                    // 更新當前座標
+                    currentR = nextR
+                    currentC = nextC
+
+                    movedPositions.add(enemyPos)
+                    movedPositions.add(newPos)
+                    stepsTaken++
+
+                    // 如果移動後已經貼身，就停止移動準備攻擊
+                    if (isAdjacent(currentR, currentC, playerCell.row, playerCell.col)) {
+                        break
+                    }
+                } else {
+                    break // 被擋住了
+                }
+            }
+
+            // 3. 移動後的攻擊判定
+            // ✅ 修正：這裡直接使用 updated 的 currentR, currentC，解決 Unresolved reference
+            if (isAdjacent(currentR, currentC, playerCell.row, playerCell.col)) {
+                val dmg = BattleDamageLogic.calculateFinalDamage(enemy.attack, playerStats.defense ?: 0)
+                damageDealt += dmg
+                playerAttacked = true
+                logBuilder.append("${enemy.name} 移動後攻擊了你，造成 $dmg 傷害！\n")
+            }
+        }
+
+        return EnemyTurnResult(playerAttacked, movedPositions, logBuilder.toString(), damageDealt)
+    }
+
+    // 清理已死亡的敵人 (同步 activeEnemies 清單)
+    fun refreshActiveEnemies() {
+        // 移除條件：格子變成了 EMPTY，或是敵人資料是 null，或是血量 <= 0
+        activeEnemies.removeAll { cell ->
+            cell.type == CellType.EMPTY || cell.enemy == null || (cell.enemy?.currentHp ?: 0) <= 0
+        }
+    }
+
+    fun clear() {
+        boardData.clear()
+        activeEnemies.clear()
+        cols = 0
+        rows = 0
+        // 如果有其他狀態變數 (如 currentPlayerStats)，也要在這裡重置
     }
 }
