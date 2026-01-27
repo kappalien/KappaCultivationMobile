@@ -568,9 +568,10 @@ class BattleActivity : AppCompatActivity() {
         currentPlayerMp -= skill.mpCost
         updateStatusUI()
         actionMenuLayout.visibility = View.GONE // 隱藏選單
-        updateBattleLog("施放全體技能：${skill.name}！")
 
-        // 2. 定義傷害計算邏輯 (等特效播完再執行)
+        // ------------------------------------------------------------------
+        // [步驟 1] 定義「傷害結算邏輯」 (這個函式會在特效播完後被呼叫)
+        // ------------------------------------------------------------------
         val performDamageLogic = {
             // 取得所有活著的敵人
             val activeEnemies = BattleEngine.getEnemyList().filter { it.enemy != null }
@@ -581,46 +582,56 @@ class BattleActivity : AppCompatActivity() {
             } else {
                 var killCount = 0
 
-                // 對每個敵人造成傷害
+                // 遍歷所有敵人進行傷害計算
                 activeEnemies.forEach { cell ->
+                    // 找出該敵人在 Adapter (UI) 中的位置
                     val position = adapter.boardData.indexOf(cell)
                     val enemy = cell.enemy!!
 
-                    // ✅ 修正 1: 改為呼叫 BattleDamageLogic 的正確方法
+                    // 計算傷害
                     val damage = BattleDamageLogic.calculateSkillDamage(
                         attackerAtk = currentPlayerStats.attack,
                         defenderDef = enemy.defense,
                         multiplier = skill.multiplier
                     )
 
-                    // ✅ 修正 2: 處理 Int? 的減法運算
-                    // 先取得當前血量，若為 null 則視為滿血 (health)
+                    // 扣血邏輯
                     val currentHp = enemy.currentHp ?: enemy.health
-                    // 計算新血量，並確保不小於 0
                     val newHp = (currentHp - damage).coerceAtLeast(0)
 
-                    // 寫回敵人數據
+                    // ✅ 關鍵：寫入新血量到物件中
                     enemy.currentHp = newHp
 
                     updateBattleLog("對 ${enemy.name} 造成 $damage 點傷害！")
-                    adapter.notifyItemChanged(position) // 更新格子顯示 (血條)
 
+                    // ✅ 關鍵：強制通知 Adapter 更新該格子的 UI (包含血條)
+                    // 使用 runOnUiThread 確保 UI 更新不會因為背景執行緒而失效
+                    runOnUiThread {
+                        if (position != -1) {
+                            adapter.notifyItemChanged(position)
+                        }
+                    }
+
+                    // 處理死亡
                     if (newHp <= 0) {
-                        cell.enemy = null // 移除敵人
+                        cell.enemy = null // 移除敵人數據
                         cell.type = CellType.EMPTY
-                        adapter.notifyItemChanged(position) // 更新格子變空
+
+                        runOnUiThread {
+                            adapter.notifyItemChanged(position) // 更新格子變空
+                        }
                         updateBattleLog("${enemy.name} 被消滅了！")
                         killCount++
                     }
                 }
 
-                // 3. 通知 Engine 清理死掉的敵人
+                // 通知 Engine 清理死掉的敵人 (資料層)
                 BattleEngine.refreshActiveEnemies()
 
-                // 4. ✅ 更新 UI 上的敵人數量文字 (因為數量變了)
+                // 更新 UI 上的敵人數量文字
                 enemyStatusSummary.text = "敵人數量：${BattleEngine.getActiveEnemiesCount()}"
 
-                // 5. 檢查勝利條件
+                // 檢查勝利條件
                 if (BattleEngine.getActiveEnemiesCount() == 0) {
                     handleBattleEnd(true)
                 } else {
@@ -630,46 +641,47 @@ class BattleActivity : AppCompatActivity() {
             }
         }
 
-        // 3. 播放全螢幕粒子特效
+        // ------------------------------------------------------------------
+        // [步驟 2] 播放特效 (這裡整合了您要的「5~8次隨機打擊」)
+        // ------------------------------------------------------------------
         if (skill.aoeEffectType != AoeEffectType.NONE) {
+            updateBattleLog("施放全體絕學：${skill.name}！")
+
+            // A. 播放全螢幕粒子特效 (如隕石雨) -> 播完後執行 performDamageLogic
             effectManager.playAoeEffect(skill.aoeEffectType) {
-                performDamageLogic() // 特效播完後結算傷害
+                performDamageLogic()
             }
 
-            // 2. ✅ 新增：製造「亂數打擊感」
-            // 在粒子特效播放的 2 秒鐘內，隨機在敵人身上炸開花
+            // B. 同步製造「亂數打擊感」 (敵人身上的小爆炸)
             lifecycleScope.launch {
                 val hitEffect = skill.targetEffectResId ?: R.drawable.effect_explosion
                 val activeEnemies = BattleEngine.getEnemyList().filter { it.enemy != null }
 
                 if (activeEnemies.isNotEmpty()) {
-                    // 模擬 5~8 次打擊
+                    // ✅ 這裡就是您要的：隨機模擬 5~8 次打擊
+                    // 讓畫面看起來很忙、很華麗
                     val hits = (5..8).random()
+
                     repeat(hits) {
-                        // 隨機挑選一個倒楣的敵人
-                        val randomEnemyCell = activeEnemies.random()
-                        val position = adapter.boardData.indexOf(randomEnemyCell)
+                        // 確保敵人還活著 (防呆)
+                        if (activeEnemies.isNotEmpty()) {
+                            // 隨機挑選一個倒楣的敵人 (可能重複打中同一隻，製造混亂感)
+                            val randomEnemyCell = activeEnemies.random()
+                            val position = adapter.boardData.indexOf(randomEnemyCell)
 
-                        // 在他頭上放個特效
-                        playEffectOnCell(position, hitEffect)
+                            // 在他頭上放個特效
+                            if (position != -1) {
+                                playEffectOnCell(position, hitEffect)
+                            }
+                        }
 
-                        // 隨機間隔 100~300ms，製造錯落感
+                        // 隨機間隔 100~300ms，製造錯落有致的爆炸感
                         delay((100..300).random().toLong())
                     }
                 }
             }
         } else {
-            performDamageLogic()
-        }
-
-        // 4. 播放特效 -> 結束後執行上面的傷害邏輯
-        // ✅ 修正 3: 因為上面加了 Import，這裡的 AoeEffectType 就不會報錯了
-        if (skill.aoeEffectType != AoeEffectType.NONE) {
-            updateBattleLog("施放全體絕學：${skill.name}！")
-            effectManager.playAoeEffect(skill.aoeEffectType) {
-                performDamageLogic() // 特效播完後，回呼執行傷害
-            }
-        } else {
+            // 如果這招沒有特效，直接執行傷害邏輯
             performDamageLogic()
         }
     }
