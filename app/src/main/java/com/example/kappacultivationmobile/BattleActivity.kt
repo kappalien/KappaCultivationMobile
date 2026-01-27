@@ -754,6 +754,6 @@ class BattleActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         BattleEngine.clear()
-        BgmManager.stop()
+        //BgmManager.stop()
     }
 }
